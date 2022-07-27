@@ -1,4 +1,9 @@
-﻿using DeaneBarker.Optimizely.StaticSites.Services;
+﻿using DeaneBarker.Optimizely.StaticSites.Models;
+using DeaneBarker.Optimizely.StaticSites.Services;
+using EPiServer;
+using EPiServer.Core;
+using EPiServer.Framework.Blobs;
+using EPiServer.ServiceLocation;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -9,9 +14,17 @@ namespace DeaneBarker.Optimizely.StaticSites
 {
     public class StaticResourceRetriever : IStaticResourceRetriever
     {
-        public byte[] GetBytesOfResource(byte[] archiveBytes, string path)
+        private const string defaultArchiveName = "_source.zip";
+        private readonly IContentLoader _loader;
+
+        public StaticResourceRetriever(IContentLoader loader)
         {
-            var zip = new ZipArchive(new MemoryStream(archiveBytes));
+            _loader = loader;
+        }
+
+        public byte[] GetBytesOfResource(StaticSiteRoot siteRoot, string path)
+        {
+            var zip = LocateZipArchive(siteRoot);
 
             if (string.IsNullOrWhiteSpace(path))
             {
@@ -39,10 +52,40 @@ namespace DeaneBarker.Optimizely.StaticSites
             }
         }
 
-        public IEnumerable<string> GetResourceNames(byte[] archiveBytes)
+        public IEnumerable<string> GetResourceNames(StaticSiteRoot siteRoot)
         {
-            var zip = new ZipArchive(new MemoryStream(archiveBytes));
-            return zip.Entries.Select(e => e.FullName);
+            return LocateZipArchive(siteRoot).Entries.Select(e => e.FullName);
+        }
+
+        private ZipArchive LocateZipArchive(StaticSiteRoot siteRoot)
+        {
+            MediaData archive = null;
+            if (siteRoot.ArchiveFile != null)
+            {
+                archive = _loader.Get<MediaData>(siteRoot.ArchiveFile);
+            }
+            else
+            {
+                var contentAssetHelper = ServiceLocator.Current.GetInstance<ContentAssetHelper>();
+                var assetFolder = contentAssetHelper.GetOrCreateAssetFolder(((IContent)siteRoot).ContentLink);
+                var assets = _loader.GetChildren<MediaData>(assetFolder.ContentLink);
+
+                archive = assets.FirstOrDefault(a => a.Name == defaultArchiveName);
+
+                if (archive == null)
+                {
+                    archive = assets.FirstOrDefault(a => a.Name.EndsWith(".zip"));
+                }
+            }
+
+            if (archive == null)
+            {
+                return null;
+            }
+
+            var archiveBytes = archive.BinaryData.ReadAllBytes();
+
+            return new ZipArchive(new MemoryStream(archiveBytes));
         }
     }
 

@@ -22,7 +22,6 @@ namespace DeaneBarker.Optimizely.StaticSites
         private static IMimeTypeMap _mimeTypeMap;
         private static IUrlResolver _urlResolver;
         private static IHttpContextAccessor _httpContext;
-        private static IStaticSourceLocator _staticSourceLocator;
         private static IStaticResourceRetriever _staticResourceRetriever;
 
         static StaticSiteCommands()
@@ -31,7 +30,6 @@ namespace DeaneBarker.Optimizely.StaticSites
             _httpContext = ServiceLocator.Current.GetInstance<IHttpContextAccessor>();
             _urlResolver = ServiceLocator.Current.GetInstance<IUrlResolver>();
             _staticResourceRetriever = ServiceLocator.Current.GetInstance<IStaticResourceRetriever>();
-            _staticSourceLocator = ServiceLocator.Current.GetInstance<IStaticSourceLocator>();
         }
 
         public static ActionResult ShowAsset(StaticSiteRoot currentPage, string path)
@@ -76,8 +74,7 @@ namespace DeaneBarker.Optimizely.StaticSites
 
         public static ActionResult ShowContents(StaticSiteRoot currentPage, string _)
         {
-            var resourceArchive = _staticSourceLocator.GetBytesOfSource(currentPage);
-            var resources = _staticResourceRetriever.GetResourceNames(resourceArchive);
+            var resources = _staticResourceRetriever.GetResourceNames(currentPage);
 
             var sb = new StringBuilder();
             sb.AppendLine($"Total resources: {resources.Count()}");

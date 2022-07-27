@@ -1,10 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using DeaneBarker.Optimizely.StaticSites.Models;
+using System.Collections.Generic;
 
 namespace DeaneBarker.Optimizely.StaticSites.Services
 {
     public interface IStaticResourceRetriever
     {
-        byte[] GetBytesOfResource(byte[] archiveBytes, string path);
-        IEnumerable<string> GetResourceNames(byte[] archiveBytes);
+        IEnumerable<string> GetResourceNames(StaticSiteRoot siteRoot);
+
+        byte[] GetBytesOfResource(StaticSiteRoot siteRoot, string path);
     }
 }

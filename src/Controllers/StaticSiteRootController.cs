@@ -20,17 +20,15 @@ namespace DeaneBarker.Optimizely.StaticSites.Controllers
         private readonly string[] allowedExtensions = new[] { ".js", ".css", ".json" };
         private readonly IStaticSitePathManager _staticSitePathManager;
         private readonly IStaticResourceRetriever _staticResourceRetriever;
-        private readonly IStaticSourceLocator _staticSourceLocator;
         private readonly IStaticSiteCommandManager _staticSiteCommandManager;
         private readonly IMimeTypeMap _mimeTypeMap;
         private readonly IStaticSiteLog _logger;
 
 
-        public StaticSiteRootController(IStaticSiteLog logger, IMimeTypeMap mimeTypeMap, IStaticSiteCommandManager staticSiteCommandManager, IStaticSitePathManager staticSitePathManager, IStaticResourceRetriever staticResourceRetriever, IStaticSourceLocator staticSourceLocator)
+        public StaticSiteRootController(IStaticSiteLog logger, IMimeTypeMap mimeTypeMap, IStaticSiteCommandManager staticSiteCommandManager, IStaticSitePathManager staticSitePathManager, IStaticResourceRetriever staticResourceRetriever)
         {
             _staticSitePathManager = staticSitePathManager;
             _staticResourceRetriever = staticResourceRetriever;
-            _staticSourceLocator = staticSourceLocator;
             _staticSiteCommandManager = staticSiteCommandManager;
             _mimeTypeMap = mimeTypeMap;
             _logger = logger;
@@ -53,8 +51,8 @@ namespace DeaneBarker.Optimizely.StaticSites.Controllers
             var responseBytes = StaticSiteCache.Instance.Get(siteId, path);
             if (responseBytes == null)
             {
-                var resourceArchive = _staticSourceLocator.GetBytesOfSource(currentPage);
-                responseBytes = _staticResourceRetriever.GetBytesOfResource(resourceArchive, effectivePath);
+                //var resourceArchive = _staticSourceLocator.GetBytesOfSource(currentPage);
+                responseBytes = _staticResourceRetriever.GetBytesOfResource(currentPage, effectivePath);
 
                 if(responseBytes == null)
                 {
@@ -117,8 +115,7 @@ namespace DeaneBarker.Optimizely.StaticSites.Controllers
 
         private string ShowContents(StaticSiteRoot currentPage)
         {
-            var resourceArchive = _staticSourceLocator.GetBytesOfSource(currentPage);
-            var resources = _staticResourceRetriever.GetResourceNames(resourceArchive);
+            var resources = _staticResourceRetriever.GetResourceNames(currentPage);
 
             var sb = new StringBuilder();
             sb.AppendLine($"Total resources: {resources.Count()}");
