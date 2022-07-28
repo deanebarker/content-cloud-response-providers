@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System;
 using System.Linq;
+using Microsoft.AspNetCore.Mvc;
 
 namespace DeaneBarker.Optimizely.StaticSites
 {
@@ -9,33 +10,22 @@ namespace DeaneBarker.Optimizely.StaticSites
     {
         public static StaticSiteCache Instance { get; } = new();
         
-        private ConcurrentDictionary<Guid, ConcurrentDictionary<string, byte[]>> cache = new();
+        private ConcurrentDictionary<Guid, ConcurrentDictionary<string, ActionResult>> cache = new();
 
         static StaticSiteCache()
         {
             Instance = new StaticSiteCache();
         }
 
-        public void Put(Guid siteId, string path, byte[] value)
+        public void Put(Guid siteId, string path, ActionResult value)
         {
             EnsureSiteCache(siteId);
             cache[siteId][path] = value;
         }
 
-        public byte[] Get(Guid siteId, string path)
+        public ActionResult Get(Guid siteId, string path)
         {
             return cache.GetValueOrDefault(siteId)?.GetValueOrDefault(path);
-        }
-
-        public void Clear(Guid siteId)
-        {
-            cache[siteId] = new();
-        }
-
-        public Dictionary<string, int> Show(Guid siteId)
-        {
-            EnsureSiteCache(siteId);
-            return cache[siteId].ToDictionary(x => x.Key, y => y.Value.Length);
         }
 
         private void EnsureSiteCache(Guid siteId)
@@ -44,6 +34,16 @@ namespace DeaneBarker.Optimizely.StaticSites
             {
                 cache[siteId] = new();
             }
+        }
+
+        public void Clear(Guid siteId)
+        {
+            cache[siteId] = new();
+        }
+
+        public IEnumerable<string> Show(Guid siteId)
+        {
+            return cache[siteId].Keys;
         }
     }
 }

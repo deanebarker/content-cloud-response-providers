@@ -38,40 +38,43 @@ namespace DeaneBarker.Optimizely.StaticSites.Controllers
         {
             var siteId = currentPage.ContentGuid;
             var path = Request.Path.ToString();
-            var effectivePath = _staticSitePathManager.GetRelativePath(currentPage, path); // We need to process this for the MIME type, regardless of whether the path is cached
 
-            // Process commands
+            ActionResult response;
+
+            // Try to get the result from cache
+            response = StaticSiteCache.Instance.Get(siteId, path);
+            if (response != null) return response;
+
+            // Is it a command?
             var commandResult = _staticSiteCommandManager.ProcessCommands(currentPage, path);
             if (commandResult != null)
             {
                 return commandResult; // This is the result of command
             }
 
-            // Get the bytes, from cache or "fresh"
-            var responseBytes = StaticSiteCache.Instance.Get(siteId, path);
-            if (responseBytes == null)
+            // Nothing in cache, not a command, so generate a new result
+            var effectivePath = _staticSitePathManager.GetRelativePath(currentPage, path);
+            var bytes = _staticResourceRetriever.GetBytesOfResource(currentPage, effectivePath);
+            if(bytes == null)
             {
-                //var resourceArchive = _staticSourceLocator.GetBytesOfSource(currentPage);
-                responseBytes = _staticResourceRetriever.GetBytesOfResource(currentPage, effectivePath);
+                return new NotFoundResult();
+            }      
 
-                if(responseBytes == null)
-                {
-                    return new NotFoundResult();
-                }
-
-                StaticSiteCache.Instance.Put(siteId, path, responseBytes);
-            }
-
-            // Return it
+            // Figure out what type of content it is (the effectivePath should always have a file extension)
             var contentType = _mimeTypeMap.GetMimeType(effectivePath);
+            
+            // Form the response
             if (_mimeTypeMap.IsText(contentType))
             {
-                return new ContentResult() { Content = Encoding.UTF8.GetString(responseBytes), ContentType = contentType };
+                 response = new ContentResult() { Content = Encoding.UTF8.GetString(bytes), ContentType = contentType };
             }
             else
             {
-                return new FileContentResult(responseBytes, contentType);
+                response = new FileContentResult(bytes, contentType);
             }
+
+            StaticSiteCache.Instance.Put(siteId, path, response);
+            return response;
         }
 
 
@@ -130,8 +133,8 @@ namespace DeaneBarker.Optimizely.StaticSites.Controllers
 
         private string ShowCache(StaticSiteRoot currentPage)
         {
-            var lines = StaticSiteCache.Instance.Show(currentPage.ContentGuid).Select(x => $"{x.Key} ({x.Value}b)");
-            return String.Join(Environment.NewLine, lines);
+            var lines = StaticSiteCache.Instance.Show(currentPage.ContentGuid);
+            return string.Join(Environment.NewLine, lines);
         }
 
         private string ClearCache(StaticSiteRoot currentPage)
