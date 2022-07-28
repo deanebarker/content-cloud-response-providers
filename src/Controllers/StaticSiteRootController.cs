@@ -18,7 +18,7 @@ namespace DeaneBarker.Optimizely.StaticSites.Controllers
     public class StaticSiteRootController : PageController<StaticSiteRoot>
     {
         private readonly string[] allowedExtensions = new[] { ".js", ".css", ".json" };
-        private readonly IStaticSitePathManager _staticSitePathManager;
+        private readonly IStaticSitePathTranslator _staticSitePathTranslator;
         private readonly IStaticResourceRetriever _staticResourceRetriever;
         private readonly IStaticSiteCommandManager _staticSiteCommandManager;
         private readonly IMimeTypeMap _mimeTypeMap;
@@ -26,9 +26,9 @@ namespace DeaneBarker.Optimizely.StaticSites.Controllers
         private readonly IStaticSiteCache _staticSiteCache;
 
 
-        public StaticSiteRootController(IStaticSiteCache staticSiteCache, IStaticSiteLog logger, IMimeTypeMap mimeTypeMap, IStaticSiteCommandManager staticSiteCommandManager, IStaticSitePathManager staticSitePathManager, IStaticResourceRetriever staticResourceRetriever)
+        public StaticSiteRootController(IStaticSiteCache staticSiteCache, IStaticSiteLog logger, IMimeTypeMap mimeTypeMap, IStaticSiteCommandManager staticSiteCommandManager, IStaticSitePathTranslator staticSitePathTranslator, IStaticResourceRetriever staticResourceRetriever)
         {
-            _staticSitePathManager = staticSitePathManager;
+            _staticSitePathTranslator = staticSitePathTranslator;
             _staticResourceRetriever = staticResourceRetriever;
             _staticSiteCommandManager = staticSiteCommandManager;
             _mimeTypeMap = mimeTypeMap;
@@ -55,7 +55,7 @@ namespace DeaneBarker.Optimizely.StaticSites.Controllers
             }
 
             // Nothing in cache, not a command, so generate a new result
-            var effectivePath = _staticSitePathManager.GetRelativePath(currentPage, path);
+            var effectivePath = _staticSitePathTranslator.GetTranslatedPath(currentPage, path);
             var bytes = _staticResourceRetriever.GetBytesOfResource(currentPage, effectivePath);
             if(bytes == null)
             {

@@ -4,11 +4,11 @@ using DeaneBarker.Optimizely.StaticSites.Models;
 
 namespace DeaneBarker.Optimizely.StaticSites
 {
-    public class StaticSitePathManager : IStaticSitePathTranslator
+    public class StaticSitePathTranslator : IStaticSitePathTranslator
     {
         private IUrlResolver _urlResolver;
 
-        public StaticSitePathManager(IUrlResolver urlResolver)
+        public StaticSitePathTranslator(IUrlResolver urlResolver)
         {
             _urlResolver = urlResolver;
         }

@@ -2,8 +2,8 @@
 
 namespace DeaneBarker.Optimizely.StaticSites.Services
 {
-    public interface IStaticSitePathManager
+    public interface IStaticSitePathTranslator
     {
-        string GetRelativePath(StaticSiteRoot siteRoot, string requestedPath);
+        string GetTranslatedPath(StaticSiteRoot siteRoot, string requestedPath);
     }
 }
