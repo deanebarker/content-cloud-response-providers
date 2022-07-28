@@ -21,12 +21,12 @@ namespace DeaneBarker.Optimizely.StaticSites.Controllers
         private readonly IStaticSitePathTranslator _staticSitePathTranslator;
         private readonly IStaticResourceRetriever _staticResourceRetriever;
         private readonly IStaticSiteCommandManager _staticSiteCommandManager;
-        private readonly IMimeTypeMap _mimeTypeMap;
+        private readonly IMimeTypeManager _mimeTypeMap;
         private readonly IStaticSiteLog _logger;
         private readonly IStaticSiteCache _staticSiteCache;
 
 
-        public StaticSiteRootController(IStaticSiteCache staticSiteCache, IStaticSiteLog logger, IMimeTypeMap mimeTypeMap, IStaticSiteCommandManager staticSiteCommandManager, IStaticSitePathTranslator staticSitePathTranslator, IStaticResourceRetriever staticResourceRetriever)
+        public StaticSiteRootController(IStaticSiteCache staticSiteCache, IStaticSiteLog logger, IMimeTypeManager mimeTypeMap, IStaticSiteCommandManager staticSiteCommandManager, IStaticSitePathTranslator staticSitePathTranslator, IStaticResourceRetriever staticResourceRetriever)
         {
             _staticSitePathTranslator = staticSitePathTranslator;
             _staticResourceRetriever = staticResourceRetriever;

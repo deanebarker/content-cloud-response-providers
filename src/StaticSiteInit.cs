@@ -19,7 +19,7 @@ namespace opti.deanebarker.net.PathServicing
             context.Services.AddSingleton<IStaticSitePathTranslator, StaticSitePathTranslator>();
             context.Services.AddSingleton<IStaticResourceRetriever, StaticResourceRetriever>();
             context.Services.AddSingleton<IStaticSiteCommandManager, StaticSiteCommandManager>();
-            context.Services.AddSingleton<IMimeTypeMap, MimeTypeMap>();
+            context.Services.AddSingleton<IMimeTypeManager, MimeTypeManager>();
             context.Services.AddSingleton<IStaticSiteLog, StaticSiteLog>();
             context.Services.AddSingleton<IStaticSiteCache, StaticSiteCache>();
         }

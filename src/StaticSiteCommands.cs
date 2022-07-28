@@ -19,7 +19,7 @@ namespace DeaneBarker.Optimizely.StaticSites
     {
         private static readonly string[] allowedExtensions = new[] { ".js", ".css", ".json" };
 
-        private static IMimeTypeMap _mimeTypeMap;
+        private static IMimeTypeManager _mimeTypeMap;
         private static IUrlResolver _urlResolver;
         private static IHttpContextAccessor _httpContext;
         private static IStaticResourceRetriever _staticResourceRetriever;
@@ -27,7 +27,7 @@ namespace DeaneBarker.Optimizely.StaticSites
 
         static StaticSiteCommands()
         {
-            _mimeTypeMap = ServiceLocator.Current.GetInstance<IMimeTypeMap>();
+            _mimeTypeMap = ServiceLocator.Current.GetInstance<IMimeTypeManager>();
             _httpContext = ServiceLocator.Current.GetInstance<IHttpContextAccessor>();
             _urlResolver = ServiceLocator.Current.GetInstance<IUrlResolver>();
             _staticResourceRetriever = ServiceLocator.Current.GetInstance<IStaticResourceRetriever>();
