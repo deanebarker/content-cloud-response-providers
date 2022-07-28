@@ -4,7 +4,7 @@ using DeaneBarker.Optimizely.StaticSites.Models;
 
 namespace DeaneBarker.Optimizely.StaticSites
 {
-    public class StaticSitePathManager : IStaticSitePathManager
+    public class StaticSitePathManager : IStaticSitePathTranslator
     {
         private IUrlResolver _urlResolver;
 
@@ -13,7 +13,7 @@ namespace DeaneBarker.Optimizely.StaticSites
             _urlResolver = urlResolver;
         }
 
-        public string GetRelativePath(StaticSiteRoot siteRoot, string requestedPath)
+        public string GetTranslatedPath(StaticSiteRoot siteRoot, string requestedPath)
         {
             var pathToRoot = _urlResolver.GetUrl(siteRoot).Trim('/');
             requestedPath = requestedPath.Trim('/');
