@@ -23,6 +23,7 @@ namespace DeaneBarker.Optimizely.StaticSites
         private static IUrlResolver _urlResolver;
         private static IHttpContextAccessor _httpContext;
         private static IStaticResourceRetriever _staticResourceRetriever;
+        private static IStaticSiteCache _staticSiteCache;
 
         static StaticSiteCommands()
         {
@@ -30,6 +31,7 @@ namespace DeaneBarker.Optimizely.StaticSites
             _httpContext = ServiceLocator.Current.GetInstance<IHttpContextAccessor>();
             _urlResolver = ServiceLocator.Current.GetInstance<IUrlResolver>();
             _staticResourceRetriever = ServiceLocator.Current.GetInstance<IStaticResourceRetriever>();
+            _staticSiteCache = ServiceLocator.Current.GetInstance<IStaticSiteCache>();
         }
 
         public static ActionResult ShowAsset(StaticSiteRoot currentPage, string path)
@@ -93,7 +95,7 @@ namespace DeaneBarker.Optimizely.StaticSites
 
         public static ActionResult ShowCache(StaticSiteRoot currentPage, string _)
         {
-            var lines = StaticSiteCache.Instance.Show(currentPage.ContentGuid);
+            var lines = _staticSiteCache.Show(currentPage.ContentGuid);
             return new ContentResult()
             {
                 Content = string.Join(Environment.NewLine, lines),
@@ -103,7 +105,8 @@ namespace DeaneBarker.Optimizely.StaticSites
 
         public static ActionResult ClearCache(StaticSiteRoot currentPage, string _)
         {
-            StaticSiteCache.Instance.Clear(currentPage.ContentGuid);
+
+            _staticSiteCache.Clear(currentPage.ContentGuid);
             return new ContentResult()
             {
                 Content = "Cache Cleared",

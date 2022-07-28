@@ -23,15 +23,17 @@ namespace DeaneBarker.Optimizely.StaticSites.Controllers
         private readonly IStaticSiteCommandManager _staticSiteCommandManager;
         private readonly IMimeTypeMap _mimeTypeMap;
         private readonly IStaticSiteLog _logger;
+        private readonly IStaticSiteCache _staticSiteCache;
 
 
-        public StaticSiteRootController(IStaticSiteLog logger, IMimeTypeMap mimeTypeMap, IStaticSiteCommandManager staticSiteCommandManager, IStaticSitePathManager staticSitePathManager, IStaticResourceRetriever staticResourceRetriever)
+        public StaticSiteRootController(IStaticSiteCache staticSiteCache, IStaticSiteLog logger, IMimeTypeMap mimeTypeMap, IStaticSiteCommandManager staticSiteCommandManager, IStaticSitePathManager staticSitePathManager, IStaticResourceRetriever staticResourceRetriever)
         {
             _staticSitePathManager = staticSitePathManager;
             _staticResourceRetriever = staticResourceRetriever;
             _staticSiteCommandManager = staticSiteCommandManager;
             _mimeTypeMap = mimeTypeMap;
             _logger = logger;
+            _staticSiteCache = staticSiteCache;
         }
 
         public ActionResult Index(StaticSiteRoot currentPage)
@@ -42,7 +44,7 @@ namespace DeaneBarker.Optimizely.StaticSites.Controllers
             ActionResult response;
 
             // Try to get the result from cache
-            response = StaticSiteCache.Instance.Get(siteId, path);
+            response = _staticSiteCache.Get(siteId, path);
             if (response != null) return response;
 
             // Is it a command?
@@ -73,74 +75,9 @@ namespace DeaneBarker.Optimizely.StaticSites.Controllers
                 response = new FileContentResult(bytes, contentType);
             }
 
-            StaticSiteCache.Instance.Put(siteId, path, response);
+            _staticSiteCache.Put(siteId, path, response);
             return response;
         }
 
-
-        // Commands --
-
-        private string ShowAsset(StaticSiteRoot currentPage, string path)
-        {
-            var extension = Path.GetExtension(path);
-            if(!allowedExtensions.Contains(extension))
-            {
-                throw new ContentNotFoundException();
-            }
-
-            var contentAssetHelper = ServiceLocator.Current.GetInstance<ContentAssetHelper>();
-            var assetFolder = contentAssetHelper.GetOrCreateAssetFolder(((IContent)currentPage).ContentLink);
-            var repo = ServiceLocator.Current.GetInstance<IContentRepository>();
-            var assets = repo.GetChildren<MediaData>(assetFolder.ContentLink);
-            var asset = assets.FirstOrDefault(a => a.Name == Path.GetFileName(path));
-
-            if(asset == null)
-            {
-                throw new ContentNotFoundException();
-            }
-
-            return Encoding.UTF8.GetString(asset.BinaryData.ReadAllBytes());
-        }
-
-        private string ShowContext(StaticSiteRoot staticSiteRoot)
-        {
-            var urlResolver = ServiceLocator.Current.GetInstance<IUrlResolver>();
-
-            var contextVars = new
-            {
-                rootId = staticSiteRoot.ContentLink.ID,
-                baseUrl = urlResolver.GetUrl(staticSiteRoot),
-                userName = Request.HttpContext.User?.Identity?.Name
-            };
-
-            return JsonSerializer.Serialize(contextVars);
-        }
-
-        private string ShowContents(StaticSiteRoot currentPage)
-        {
-            var resources = _staticResourceRetriever.GetResourceNames(currentPage);
-
-            var sb = new StringBuilder();
-            sb.AppendLine($"Total resources: {resources.Count()}");
-            sb.AppendLine();
-            foreach (var resource in resources)
-            {
-                sb.AppendLine(resource);
-            }
-
-            return sb.ToString();
-        }
-
-        private string ShowCache(StaticSiteRoot currentPage)
-        {
-            var lines = StaticSiteCache.Instance.Show(currentPage.ContentGuid);
-            return string.Join(Environment.NewLine, lines);
-        }
-
-        private string ClearCache(StaticSiteRoot currentPage)
-        {
-            StaticSiteCache.Instance.Clear(currentPage.ContentGuid);
-            return "Cache cleared";
-        }
     }
 }

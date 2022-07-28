@@ -3,19 +3,13 @@ using System.Collections.Generic;
 using System;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
+using DeaneBarker.Optimizely.StaticSites.Services;
 
 namespace DeaneBarker.Optimizely.StaticSites
 {
-    public class StaticSiteCache
+    public class StaticSiteCache : IStaticSiteCache
     {
-        public static StaticSiteCache Instance { get; } = new();
-        
         private ConcurrentDictionary<Guid, ConcurrentDictionary<string, ActionResult>> cache = new();
-
-        static StaticSiteCache()
-        {
-            Instance = new StaticSiteCache();
-        }
 
         public void Put(Guid siteId, string path, ActionResult value)
         {

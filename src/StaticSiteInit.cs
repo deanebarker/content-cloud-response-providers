@@ -21,7 +21,7 @@ namespace opti.deanebarker.net.PathServicing
             context.Services.AddSingleton<IStaticSiteCommandManager, StaticSiteCommandManager>();
             context.Services.AddSingleton<IMimeTypeMap, MimeTypeMap>();
             context.Services.AddSingleton<IStaticSiteLog, StaticSiteLog>();
-
+            context.Services.AddSingleton<IStaticSiteCache, StaticSiteCache>();
         }
 
         public void Initialize(InitializationEngine context)
