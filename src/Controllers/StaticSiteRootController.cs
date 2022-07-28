@@ -19,14 +19,14 @@ namespace DeaneBarker.Optimizely.StaticSites.Controllers
     {
         private readonly string[] allowedExtensions = new[] { ".js", ".css", ".json" };
         private readonly IStaticSitePathTranslator _staticSitePathTranslator;
-        private readonly IStaticResourceRetriever _staticResourceRetriever;
+        private readonly IStaticResourceProvider _staticResourceRetriever;
         private readonly IStaticSiteCommandManager _staticSiteCommandManager;
         private readonly IMimeTypeManager _mimeTypeMap;
         private readonly IStaticSiteLog _logger;
         private readonly IStaticSiteCache _staticSiteCache;
 
 
-        public StaticSiteRootController(IStaticSiteCache staticSiteCache, IStaticSiteLog logger, IMimeTypeManager mimeTypeMap, IStaticSiteCommandManager staticSiteCommandManager, IStaticSitePathTranslator staticSitePathTranslator, IStaticResourceRetriever staticResourceRetriever)
+        public StaticSiteRootController(IStaticSiteCache staticSiteCache, IStaticSiteLog logger, IMimeTypeManager mimeTypeMap, IStaticSiteCommandManager staticSiteCommandManager, IStaticSitePathTranslator staticSitePathTranslator, IStaticResourceProvider staticResourceRetriever)
         {
             _staticSitePathTranslator = staticSitePathTranslator;
             _staticResourceRetriever = staticResourceRetriever;

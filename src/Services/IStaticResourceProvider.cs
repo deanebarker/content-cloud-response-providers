@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace DeaneBarker.Optimizely.StaticSites.Services
 {
-    public interface IStaticResourceRetriever
+    public interface IStaticResourceProvider
     {
         IEnumerable<string> GetResourceNames(StaticSiteRoot siteRoot);
 

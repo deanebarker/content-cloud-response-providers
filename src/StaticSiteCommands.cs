@@ -22,7 +22,7 @@ namespace DeaneBarker.Optimizely.StaticSites
         private static IMimeTypeManager _mimeTypeMap;
         private static IUrlResolver _urlResolver;
         private static IHttpContextAccessor _httpContext;
-        private static IStaticResourceRetriever _staticResourceRetriever;
+        private static IStaticResourceProvider _staticResourceRetriever;
         private static IStaticSiteCache _staticSiteCache;
 
         static StaticSiteCommands()
@@ -30,7 +30,7 @@ namespace DeaneBarker.Optimizely.StaticSites
             _mimeTypeMap = ServiceLocator.Current.GetInstance<IMimeTypeManager>();
             _httpContext = ServiceLocator.Current.GetInstance<IHttpContextAccessor>();
             _urlResolver = ServiceLocator.Current.GetInstance<IUrlResolver>();
-            _staticResourceRetriever = ServiceLocator.Current.GetInstance<IStaticResourceRetriever>();
+            _staticResourceRetriever = ServiceLocator.Current.GetInstance<IStaticResourceProvider>();
             _staticSiteCache = ServiceLocator.Current.GetInstance<IStaticSiteCache>();
         }
 

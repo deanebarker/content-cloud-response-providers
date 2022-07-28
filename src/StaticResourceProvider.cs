@@ -12,12 +12,12 @@ using System.Linq;
 
 namespace DeaneBarker.Optimizely.StaticSites
 {
-    public class StaticResourceRetriever : IStaticResourceRetriever
+    public class StaticResourceProvider : IStaticResourceProvider
     {
         private const string defaultArchiveName = "_source.zip";
         private readonly IContentLoader _loader;
 
-        public StaticResourceRetriever(IContentLoader loader)
+        public StaticResourceProvider(IContentLoader loader)
         {
             _loader = loader;
         }

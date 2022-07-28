@@ -17,7 +17,7 @@ namespace opti.deanebarker.net.PathServicing
             context.Services.AddSingleton<IPartialRouter, StaticSitePartialRouter>();
             context.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             context.Services.AddSingleton<IStaticSitePathTranslator, StaticSitePathTranslator>();
-            context.Services.AddSingleton<IStaticResourceRetriever, StaticResourceRetriever>();
+            context.Services.AddSingleton<IStaticResourceProvider, StaticResourceProvider>();
             context.Services.AddSingleton<IStaticSiteCommandManager, StaticSiteCommandManager>();
             context.Services.AddSingleton<IMimeTypeManager, MimeTypeManager>();
             context.Services.AddSingleton<IStaticSiteLog, StaticSiteLog>();
