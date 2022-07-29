@@ -24,6 +24,11 @@ namespace DeaneBarker.Optimizely.StaticSites
 
         public byte[] GetBytesOfResource(StaticSiteRoot siteRoot, string path)
         {
+            if(string.IsNullOrWhiteSpace(path))
+            {
+                throw new ArgumentNullException(nameof(path));
+            }
+
             var zip = LocateZipArchive(siteRoot);
 
             if (string.IsNullOrWhiteSpace(path))

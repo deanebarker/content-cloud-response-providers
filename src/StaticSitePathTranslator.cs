@@ -6,6 +6,11 @@ namespace DeaneBarker.Optimizely.StaticSites
 {
     public class StaticSitePathTranslator : IStaticSitePathTranslator
     {
+        // Public so you can change them if you like
+        public string DefaultDocument { get; set; } = "index.html";
+        public string NotFoundDocument { get; set; } = "404.html";
+
+
         private IUrlResolver _urlResolver;
 
         public StaticSitePathTranslator(IUrlResolver urlResolver)
@@ -26,7 +31,7 @@ namespace DeaneBarker.Optimizely.StaticSites
 
             if(relativePath.EndsWith("/") || string.IsNullOrWhiteSpace(relativePath))
             {
-                relativePath = string.Concat(relativePath, "index.html");
+                relativePath = string.Concat(relativePath, DefaultDocument);
             }
 
             return relativePath.Trim('/');

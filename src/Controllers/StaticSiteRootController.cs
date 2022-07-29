@@ -55,20 +55,30 @@ namespace DeaneBarker.Optimizely.StaticSites.Controllers
             }
 
             // Nothing in cache, not a command, so generate a new result
+            var statusCode = 200; // Assumed until proven otherwise
             var effectivePath = _staticSitePathTranslator.GetTranslatedPath(currentPage, path);
+            var contentType = _mimeTypeMap.GetMimeType(effectivePath); // By this point, the effectivePath should have file extension
+            
+            // Try to retrieve the actual bytes of what was requested
             var bytes = _staticResourceRetriever.GetBytesOfResource(currentPage, effectivePath);
-            if(bytes == null)
+            if (bytes == null)
             {
-                return new NotFoundResult();
-            }      
+                // Didn't find the requested resource; try to rerieve a 404 page
+                bytes = _staticResourceRetriever.GetBytesOfResource(currentPage, _staticSitePathTranslator.NotFoundDocument);
+                if (bytes == null)
+                {
+                    return new NotFoundResult(); // Can't find the resource or a 404 page; give up
+                }
 
-            // Figure out what type of content it is (the effectivePath should always have a file extension)
-            var contentType = _mimeTypeMap.GetMimeType(effectivePath);
+                // If we got here, then we have a 404 page
+                statusCode = 404;
+                contentType = "text/html"; // I think this is a fair assumption for a 404 page?
+            }
             
             // Form the response
             if (_mimeTypeMap.IsText(contentType))
             {
-                 response = new ContentResult() { Content = Encoding.UTF8.GetString(bytes), ContentType = contentType };
+                 response = new ContentResult() { Content = Encoding.UTF8.GetString(bytes), ContentType = contentType, StatusCode = statusCode  };
             }
             else
             {
