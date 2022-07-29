@@ -1,12 +1,13 @@
 ﻿using DeaneBarker.Optimizely.StaticSites.Services;
 using Microsoft.AspNetCore.StaticFiles;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace DeaneBarker.Optimizely.StaticSites
 {
     public class MimeTypeManager : IMimeTypeManager
     {
-        private readonly string[] additionalTextMime = new[] {
+        public List<string> AdditionalTextMimeTypes = new() {
             "application/javascript",
             "application/x-javascript", // Weird, but it's out there
             "application/json",
@@ -35,7 +36,7 @@ namespace DeaneBarker.Optimizely.StaticSites
                 return true; // Lots of weird one-offs like "application/whatever+xml"
             }
 
-            return additionalTextMime.Contains(mimeType);
+            return AdditionalTextMimeTypes.Contains(mimeType);
         }
     }
 }
