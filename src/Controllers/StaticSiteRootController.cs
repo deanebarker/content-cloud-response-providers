@@ -1,39 +1,30 @@
 ﻿using DeaneBarker.Optimizely.StaticSites.Models;
 using DeaneBarker.Optimizely.StaticSites.Services;
-using EPiServer;
-using EPiServer.Core;
-using EPiServer.Framework.Blobs;
-using EPiServer.ServiceLocation;
+using DeaneBarker.Optimizely.StaticSites.Transformers;
 using EPiServer.Web.Mvc;
-using EPiServer.Web.Routing;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.IO;
-using System.Linq;
 using System.Text;
-using System.Text.Json;
 
 namespace DeaneBarker.Optimizely.StaticSites.Controllers
 {
     public class StaticSiteRootController : PageController<StaticSiteRoot>
     {
-        private readonly string[] allowedExtensions = new[] { ".js", ".css", ".json" };
         private readonly IStaticSitePathTranslator _staticSitePathTranslator;
         private readonly IStaticResourceProvider _staticResourceRetriever;
         private readonly IStaticSiteCommandManager _staticSiteCommandManager;
         private readonly IMimeTypeManager _mimeTypeMap;
-        private readonly IStaticSiteLog _logger;
         private readonly IStaticSiteCache _staticSiteCache;
+        private readonly IStaticSiteTransformerManager _staticSiteTransformerManager;
 
 
-        public StaticSiteRootController(IStaticSiteCache staticSiteCache, IStaticSiteLog logger, IMimeTypeManager mimeTypeMap, IStaticSiteCommandManager staticSiteCommandManager, IStaticSitePathTranslator staticSitePathTranslator, IStaticResourceProvider staticResourceRetriever)
+        public StaticSiteRootController(IStaticSiteTransformerManager staticSiteTransformerManager, IStaticSiteCache staticSiteCache, IMimeTypeManager mimeTypeMap, IStaticSiteCommandManager staticSiteCommandManager, IStaticSitePathTranslator staticSitePathTranslator, IStaticResourceProvider staticResourceRetriever)
         {
             _staticSitePathTranslator = staticSitePathTranslator;
             _staticResourceRetriever = staticResourceRetriever;
             _staticSiteCommandManager = staticSiteCommandManager;
             _mimeTypeMap = mimeTypeMap;
-            _logger = logger;
             _staticSiteCache = staticSiteCache;
+            _staticSiteTransformerManager = staticSiteTransformerManager;
         }
 
         public ActionResult Index(StaticSiteRoot currentPage)
@@ -74,6 +65,8 @@ namespace DeaneBarker.Optimizely.StaticSites.Controllers
                 statusCode = 404;
                 contentType = "text/html"; // I think this is a fair assumption for a 404 page?
             }
+
+            bytes = _staticSiteTransformerManager.Transform(bytes, effectivePath,contentType);
             
             // Form the response
             if (_mimeTypeMap.IsText(contentType))

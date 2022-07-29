@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using DeaneBarker.Optimizely.StaticSites;
 using DeaneBarker.Optimizely.StaticSites.Services;
+using DeaneBarker.Optimizely.StaticSites.Transformers;
 
 namespace opti.deanebarker.net.PathServicing
 {
@@ -22,6 +23,7 @@ namespace opti.deanebarker.net.PathServicing
             context.Services.AddSingleton<IMimeTypeManager, MimeTypeManager>();
             context.Services.AddSingleton<IStaticSiteLog, StaticSiteLog>();
             context.Services.AddSingleton<IStaticSiteCache, StaticSiteCache>();
+            context.Services.AddSingleton<IStaticSiteTransformerManager, StaticSiteTransformerManager>();
         }
 
         public void Initialize(InitializationEngine context)
