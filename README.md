@@ -6,7 +6,7 @@ The sites can either be the entire domain, or just a branch of URLs. It effectiv
 
 The existence of a static site does not affect any other functionality in Content Cloud. If it's confined to a branch of the page tree, it will be used only for URLs under its point in the tree. Additionally, it does not affect the operation of any of the headless content APIs.
 
-*COMING SOON: Why would someone want to do this? (I promise there are some good reasons.)*
+[Why would someone want to do this?](docs/why.md) (I promise there are some good reasons.)
 
 ## How It Works
 
@@ -62,16 +62,33 @@ This is extensible. New commands can be registered in `StaticSiteCommands`.
 
 Presently, none of these command paths are authenticated.
 
+## Path Translation
+
+To translate an inbound path to a path that can be retrieved, the default service (derived from `IStaticPathTranslator`) follows this logic:
+
+* The inbound URL (in full) is trimmed from the start with the URL from the `StaticSiteRoot`
+* If the remaining URL ends in a slash, then the default document is appended (by default, this is `index.html`, but it's a public property on `IStaticPathTranslator` if you want to change ut)
+* The leading slash is trimmed
+
+So, if the `StaticSiteRoot` is at `/foo/bar/` and you request `/foo/bar/baz/`, that will be translated into `baz/index.html` for retrieval by `IStaticSiteResourceProvider`.
+
+If nothing is found, the resource provider will look for something at `404.html` (also a public property on `IStaticPathTranslator`, if you want to change it). If it finds something there, the contents will be retuned with a 404 status code. If nothing is found there, the controller will return a `NotFoundResult` which will be handled however you configured it.
+
+## MIME Type Determination
+
+After path translation, there should always be a file extension. I delegate MIME determination to the `FileExtensionContentTypeProvider` (this is handled in `IMimeTypeManager` if you want to customize it).
+
+Based on the MIME type, I have some logic to determine if the resource contents are text or not (so I know whether to return a `ContentResult` or `FileContentResult`). The logic is:
+
+* If the MIME starts with `text/` then it's text.
+* If the MIME ends with `+xml` then it's text (there are a bunch of weird ones like this)
+* `MimeTypeManager` has a default list of seven other text MIMEs (like, `application/javascript` etc; it's a public property, if you want to change it)
+* If it doesn't resolve as text by this point, then it's not text
+
 ## Status
 
 Wildly alpha and totally unsupported.
 
-This is a hobby/side project of an Optimizely employee. It is _not_ part of the product, and it's _not_ a Lab project.
+This is a hobby/side project of an Optimizely employee. It is _not_ part of the product, and it's _not_ a Labs project.
 
-Some things to add:
-
-* Specifying default filenames (it's currently hardcoded to `index.html`)
-* Specifying a 404 page
-* File filter/transforms
-
-(Honestly, I'm not even totally sure this is a good idea. It's basically an academic pursuit at the moment.)
+Honestly, I'm not even totally sure this is a good idea. It's basically an academic pursuit at the moment.
