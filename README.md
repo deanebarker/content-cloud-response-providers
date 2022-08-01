@@ -4,13 +4,15 @@ This library allows you to serve entire sections of static-file based content fr
 
 The sites can either be the entire domain, or just a branch of URLs. It effectively turns a single page into a web server which will respond to requests with the contents of managed files. Those files can be updated directly from the Edit Mode UI and do not require a code deploy.
 
+At the default service implementation, the static resources are stored in a zip file uploaded to the repository as `MediaData` (see "Resource Retrieval" below).
+
 The existence of a static site does not affect any other functionality in Content Cloud. If it's confined to a branch of the page tree, it will be used only for URLs under its point in the tree. Additionally, it does not affect the operation of any of the headless content APIs.
 
 [Why would someone want to do this?](docs/why.md) (I promise there are some good reasons.)
 
-## How It Works
+## Background: How Partial Routers Work
 
-Static Sites are accomplished via a "partial router," which is a Content Cloud feature (specifically, it's an implementation of the `IPartialRouter<T,T>` interface).
+Static site hosting is accomplished via a "partial router," which is a Content Cloud feature (specifically, it's an implementation of the `IPartialRouter<T,T>` interface).
 
 In Content Cloud, URLs are resolved segment-by-segment, from left to right. The leftmost segment is matched to a page, then the next segment is matched to a child page of the first one, and so on, until all segments have been resolved and the desired page is produced.
 
@@ -74,7 +76,23 @@ So, if the `StaticSiteRoot` is at `/foo/bar/` and you request `/foo/bar/baz/`, t
 
 If nothing is found, the resource provider will look for something at `404.html` (also a public property on `IStaticPathTranslator`, if you want to change it). If it finds something there, the contents will be retuned with a 404 status code. If nothing is found there, the controller will return a `NotFoundResult` which will be handled however you configured it.
 
-## MIME Type Determination
+## Resource Retrieval
+
+The translated path (from above) is passed to an implementation of `IStaticResourceProvider`. That service responds with a payload of bytes which represents the resource.
+
+The default service implementation retrieves the resource from a zip file stored in the repository. It uses the following logic to find the asset (it uses the first one that it finds):
+
+1. If the `ArchiveFile` property is populated, it will use that reference (this is so multiple static sites can use the same zip file of assets)
+2. If an asset attached to the `StaticSiteRoot` is named `_source.zip`
+3. The first `.zip` asset it finds attached to the content object
+
+(In most cases, falling through to #3 is fine. You only need to do #1 if you want to use the same file in multiple places, and only need to use #2 if you'll have more than one zip file attached to the object.)
+
+Once the zip file is located, the translated path is used to return the bytes of the resource.
+
+There is no need to know or care what the type of resource is (HTML file, image, etc.). The response is formed solely from the bytes, and the `ContentType` is generated from the requested path (see below).
+
+## MIME/Content Type Determination
 
 After path translation, there should always be a file extension. I delegate MIME determination to the `FileExtensionContentTypeProvider` (this is handled in `IMimeTypeManager` if you want to customize it).
 
@@ -84,6 +102,25 @@ Based on the MIME type, I have some logic to determine if the resource contents 
 * If the MIME ends with `+xml` then it's text (there are a bunch of weird ones like this)
 * `MimeTypeManager` has a default list of seven other text MIMEs (like, `application/javascript` etc; it's a public property, if you want to change it)
 * If it doesn't resolve as text by this point, then it's not text
+
+## Resource Transformation
+
+Static resources can be transformed after retrieval, before they are sent back in the response. Some examples:
+
+1. A transformer could ensure there was a consistent `DOCTYPE` at the top of every HTML file
+2. A transformer could resize images based on a querystring argument
+3. A transformer could process CSS shorthand files, like Sass or Less
+
+Transformation is _not_ done in "real time." The transforms are cached for future requests.
+
+A transformer is a class that implements `ITransformer` and provides a `Transform` method. Instances of these classes need to be registered with the `IStaticSiteTransformerManager` service.
+
+```csharp
+var _staticSiteTransformerManager = ServiceLocator.Current.GetInstance<IStaticSiteTransformerManager>();
+_staticSiteTransformerManager.Transformers.Add(new AddScriptTag("http://example.com/deane.js"));
+_staticSiteTransformerManager.Transformers.Add(new RemoveRemoteScripts());
+_staticSiteTransformerManager.Transformers.Add(new EnsureDocType());
+```
 
 ## Status
 
