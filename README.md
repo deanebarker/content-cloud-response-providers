@@ -122,6 +122,19 @@ _staticSiteTransformerManager.Transformers.Add(new RemoveRemoteScripts());
 _staticSiteTransformerManager.Transformers.Add(new EnsureDocType());
 ```
 
+_Every_ registered transformer executes for _every_ resource. You need to provide logic inside `Transform` to control when it _should_ alter the bytes. For example:
+
+```csharp
+public byte[] Transform(byte[] content, string path, string mimeType)
+{
+  if (mimeType != "text/html") return content; // Not HTML; abandon
+  
+  // Do stuff to the byte[] in "content"
+  
+  return content
+}
+```
+
 ## Status
 
 Wildly alpha and totally unsupported.
