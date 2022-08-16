@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using DeaneBarker.Optimizely.StaticSites.Models;
+using System.Collections.Generic;
 
 namespace DeaneBarker.Optimizely.StaticSites.Transformers
 {
@@ -6,6 +7,6 @@ namespace DeaneBarker.Optimizely.StaticSites.Transformers
     {
         List<ITransformer> Transformers { get; set; }
 
-        byte[] Transform(byte[] content, string path, string mimeType);
+        byte[] Transform(byte[] content,  string path, StaticSiteRoot siteRoot, string mimeType);
     }
 }

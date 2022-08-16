@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DeaneBarker.Optimizely.StaticSites.Models;
+using System;
 using System.Text;
 
 namespace DeaneBarker.Optimizely.StaticSites.Transformers
@@ -12,7 +13,7 @@ namespace DeaneBarker.Optimizely.StaticSites.Transformers
             _docType = docType;
         }
 
-        public byte[] Transform(byte[] content, string path, string mimeType)
+        public byte[] Transform(byte[] content, string path, StaticSiteRoot siteRoot, string mimeType)
         {
             if (mimeType != "text/html") return content;
 

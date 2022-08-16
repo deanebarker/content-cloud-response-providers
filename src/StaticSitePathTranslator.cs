@@ -20,8 +20,8 @@ namespace DeaneBarker.Optimizely.StaticSites
 
         public string GetTranslatedPath(StaticSiteRoot siteRoot, string requestedPath)
         {
-            var pathToRoot = _urlResolver.GetUrl(siteRoot).Trim('/');
-            requestedPath = requestedPath.Trim('/');
+            var pathToRoot = _urlResolver.GetUrl(siteRoot).TrimStart('/');
+            requestedPath = requestedPath.TrimStart('/');
 
             string relativePath = "/";
             if (requestedPath != pathToRoot)

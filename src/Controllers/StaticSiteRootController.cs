@@ -66,7 +66,7 @@ namespace DeaneBarker.Optimizely.StaticSites.Controllers
                 contentType = "text/html"; // I think this is a fair assumption for a 404 page?
             }
 
-            bytes = _staticSiteTransformerManager.Transform(bytes, effectivePath,contentType);
+            bytes = _staticSiteTransformerManager.Transform(bytes, effectivePath, currentPage, contentType);
             
             // Form the response
             if (_mimeTypeMap.IsText(contentType))
