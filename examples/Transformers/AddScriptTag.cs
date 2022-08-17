@@ -1,7 +1,7 @@
-﻿using DeaneBarker.Optimizely.StaticSites.Models;
+﻿using DeaneBarker.Optimizely.ResponseProviders.Models;
 using System.Text;
 
-namespace DeaneBarker.Optimizely.StaticSites.Transformers
+namespace DeaneBarker.Optimizely.ResponseProviders.Transformers
 {
     public class AddScriptTag : ITransformer
     {
@@ -12,7 +12,7 @@ namespace DeaneBarker.Optimizely.StaticSites.Transformers
             _path = path;
         }
 
-        public byte[] Transform(byte[] content, string path, StaticSiteRoot siteRoot, string mimeType)
+        public byte[] Transform(byte[] content, string path, BaseResponseProvider siteRoot, string mimeType)
         {
             if (mimeType != "text/html") return content;
 

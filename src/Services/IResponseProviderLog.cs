@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 
-namespace DeaneBarker.Optimizely.StaticSites.Services
+namespace DeaneBarker.Optimizely.ResponseProviders.Services
 {
-    public interface IStaticSiteLog
+    public interface IResponseProviderLog
     {
 
         List<string> Entries { get; }

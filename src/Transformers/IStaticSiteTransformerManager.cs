@@ -1,12 +1,12 @@
-﻿using DeaneBarker.Optimizely.StaticSites.Models;
+﻿using DeaneBarker.Optimizely.ResponseProviders.Models;
 using System.Collections.Generic;
 
-namespace DeaneBarker.Optimizely.StaticSites.Transformers
+namespace DeaneBarker.Optimizely.ResponseProviders.Transformers
 {
-    public interface IStaticSiteTransformerManager
+    public interface IResponseProviderTransformerManager
     {
         List<ITransformer> Transformers { get; set; }
 
-        byte[] Transform(byte[] content,  string path, StaticSiteRoot siteRoot, string mimeType);
+        byte[] Transform(byte[] content, string path, BaseResponseProvider siteRoot, string mimeType);
     }
 }

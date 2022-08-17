@@ -1,9 +1,8 @@
-﻿using DeaneBarker.Optimizely.StaticSites.Services;
+﻿using DeaneBarker.Optimizely.ResponseProviders.Services;
 using Microsoft.AspNetCore.StaticFiles;
 using System.Collections.Generic;
-using System.Linq;
 
-namespace DeaneBarker.Optimizely.StaticSites
+namespace DeaneBarker.Optimizely.ResponseProviders
 {
     public class MimeTypeManager : IMimeTypeManager
     {
@@ -26,12 +25,12 @@ namespace DeaneBarker.Optimizely.StaticSites
         {
             mimeType = mimeType.Trim().ToLower();
 
-            if(mimeType.StartsWith("text/"))
+            if (mimeType.StartsWith("text/"))
             {
                 return true;
             }
 
-            if(mimeType.EndsWith("+xml"))
+            if (mimeType.EndsWith("+xml"))
             {
                 return true; // Lots of weird one-offs like "application/whatever+xml"
             }

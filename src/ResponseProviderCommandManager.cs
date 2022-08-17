@@ -1,0 +1,49 @@
+﻿using DeaneBarker.Optimizely.ResponseProviders.Models;
+using DeaneBarker.Optimizely.ResponseProviders.Services;
+using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace DeaneBarker.Optimizely.ResponseProviders
+{
+    public class ResponseProviderCommandManager : IResponseProviderCommandManager
+    {
+        private const string commandPrefix = "__";
+        private Dictionary<string, Func<BaseResponseProvider, string, ActionResult>> commandMap = new();
+        public ResponseProviderCommandManager()
+        {
+            commandMap.Add("asset", ResponseProviderCommands.ShowAsset);
+            commandMap.Add("context", ResponseProviderCommands.ShowContext);
+            commandMap.Add("contents", ResponseProviderCommands.ShowContents);
+            commandMap.Add("cache", ResponseProviderCommands.ShowCache);
+            commandMap.Add("clear", ResponseProviderCommands.ClearCache);
+            commandMap.Add("log", ResponseProviderCommands.ShowLog);
+        }
+
+        public ActionResult ProcessCommands(BaseResponseProvider siteRoot, string path)
+        {
+            var commandSegment = path.Split("/").FirstOrDefault(s => s.StartsWith(commandPrefix));
+            if (commandSegment == null)
+            {
+                return null; // No command segemtn present
+            }
+
+            commandSegment = commandSegment.Replace(commandPrefix, string.Empty);
+            if (!commandMap.ContainsKey(commandSegment))
+            {
+                return new NotFoundResult(); // No command found for the segment
+            }
+
+            try
+            {
+                return commandMap[commandSegment](siteRoot, path);
+            }
+            catch (NotImplementedException e)
+            {
+                // 410, because this is specifically not supported
+                return new ContentResult() { Content = "This resource provider does not implement this command.", StatusCode = 410, ContentType = "text/plain" };
+            }
+        }
+    }
+}

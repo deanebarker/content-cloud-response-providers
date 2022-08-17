@@ -1,13 +1,12 @@
-﻿using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System;
-using System.Linq;
+﻿using DeaneBarker.Optimizely.ResponseProviders.Services;
 using Microsoft.AspNetCore.Mvc;
-using DeaneBarker.Optimizely.StaticSites.Services;
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 
-namespace DeaneBarker.Optimizely.StaticSites
+namespace DeaneBarker.Optimizely.ResponseProviders
 {
-    public class StaticSiteCache : IStaticSiteCache
+    public class InMemoryResponseProviderCache : IResponseProviderCache
     {
         private ConcurrentDictionary<Guid, ConcurrentDictionary<string, ActionResult>> cache = new();
 

@@ -1,5 +1,5 @@
-﻿using DeaneBarker.Optimizely.StaticSites.Models;
-using DeaneBarker.Optimizely.StaticSites.Services;
+﻿using DeaneBarker.Optimizely.ResponseProviders.Models;
+using DeaneBarker.Optimizely.ResponseProviders.Services;
 using EPiServer;
 using EPiServer.Core;
 using EPiServer.Framework.Blobs;
@@ -10,21 +10,21 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 
-namespace DeaneBarker.Optimizely.StaticSites
+namespace DeaneBarker.Optimizely.ResponseProviders
 {
-    public class StaticResourceProvider : IStaticResourceProvider
+    public class ZipArchiveSourceProvider : ISourceProvider
     {
         private const string defaultArchiveName = "_source.zip";
         private readonly IContentLoader _loader;
 
-        public StaticResourceProvider(IContentLoader loader)
+        public ZipArchiveSourceProvider(IContentLoader loader)
         {
             _loader = loader;
         }
 
-        public byte[] GetBytesOfResource(StaticSiteRoot siteRoot, string path)
+        public byte[] GetBytesOfResource(BaseResponseProvider siteRoot, string path)
         {
-            if(string.IsNullOrWhiteSpace(path))
+            if (string.IsNullOrWhiteSpace(path))
             {
                 throw new ArgumentNullException(nameof(path));
             }
@@ -57,17 +57,17 @@ namespace DeaneBarker.Optimizely.StaticSites
             }
         }
 
-        public IEnumerable<string> GetResourceNames(StaticSiteRoot siteRoot)
+        public IEnumerable<string> GetResourceNames(BaseResponseProvider siteRoot)
         {
             return LocateZipArchive(siteRoot).Entries.Select(e => e.FullName);
         }
 
-        private ZipArchive LocateZipArchive(StaticSiteRoot siteRoot)
+        private ZipArchive LocateZipArchive(BaseResponseProvider siteRoot)
         {
             MediaData archive = null;
-            if (siteRoot.ArchiveFile != null)
+            if (((ZipAssetResponseProvider)siteRoot).ArchiveFile != null)
             {
-                archive = _loader.Get<MediaData>(siteRoot.ArchiveFile);
+                archive = _loader.Get<MediaData>(((ZipAssetResponseProvider)siteRoot).ArchiveFile);
             }
             else
             {

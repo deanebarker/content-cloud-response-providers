@@ -1,10 +1,11 @@
-﻿using DeaneBarker.Optimizely.StaticSites.Models;
+﻿using DeaneBarker.Optimizely.ResponseProviders.Models;
+using EPiServer.Core;
 using EPiServer.ServiceLocation;
 using EPiServer.Web.Routing;
 using System;
 using System.Text;
 
-namespace DeaneBarker.Optimizely.StaticSites.Transformers
+namespace DeaneBarker.Optimizely.ResponseProviders.Transformers
 {
     // Yes, yes, this is awful...
     // And yes, I've read the famous Stack Overflow question...
@@ -14,9 +15,9 @@ namespace DeaneBarker.Optimizely.StaticSites.Transformers
     {
         private UrlResolver _resolver = ServiceLocator.Current.GetInstance<UrlResolver>();
 
-        public byte[] Transform(byte[] content, string path, StaticSiteRoot siteRoot, string mimeType)
+        public byte[] Transform(byte[] content, string path, BaseResponseProvider siteRoot, string mimeType)
         {
-            var rootPath = _resolver.GetUrl(siteRoot);
+            var rootPath = _resolver.GetUrl((PageData)siteRoot);
 
             if (mimeType != "text/html") return content;
 

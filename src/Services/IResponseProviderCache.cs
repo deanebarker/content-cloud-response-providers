@@ -2,9 +2,9 @@
 using System;
 using System.Collections.Generic;
 
-namespace DeaneBarker.Optimizely.StaticSites.Services
+namespace DeaneBarker.Optimizely.ResponseProviders.Services
 {
-    public interface IStaticSiteCache
+    public interface IResponseProviderCache
     {
         void Clear(Guid siteId);
         ActionResult Get(Guid siteId, string path);

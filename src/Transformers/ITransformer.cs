@@ -1,9 +1,9 @@
-﻿using DeaneBarker.Optimizely.StaticSites.Models;
+﻿using DeaneBarker.Optimizely.ResponseProviders.Models;
 
-namespace DeaneBarker.Optimizely.StaticSites.Transformers
+namespace DeaneBarker.Optimizely.ResponseProviders.Transformers
 {
     public interface ITransformer
     {
-        byte[] Transform(byte[] content, string path, StaticSiteRoot siteRoot, string mimeType);
+        byte[] Transform(byte[] content, string path, BaseResponseProvider siteRoot, string mimeType);
     }
 }

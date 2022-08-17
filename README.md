@@ -20,9 +20,9 @@ A partial router can interrupt this process when it finds a specified page type.
 
 For example, partial routers are often used for pagination, so you can enable URLs like `/news/page/2`, etc. The `page/2` part never exists as an actual page, but a partial router would activate on whatever page it finds at `/news/`, abandon further resolution, and pass `page/2` to the controller.
 
-The Static Site system works by introducing a page type called `StaticSiteRoot` and a partial router which is bound to it. When this page type is produced in the URL resolution process (at any segment), further resolution is abandoned, so the same `StaticSiteRoot` page will be returned for *all* URLs "downstream" of its location. The remaining path will then be passed to the `StaticSiteRoot` page's controller to produce output.
+The Static Site system works by introducing a page type called `ResponseProviderRoot` and a partial router which is bound to it. When this page type is produced in the URL resolution process (at any segment), further resolution is abandoned, so the same `ResponseProviderRoot` page will be returned for *all* URLs "downstream" of its location. The remaining path will then be passed to the `ResponseProviderRoot` page's controller to produce output.
 
-This path is then used to locate a static file in a zip archive which is attached to the the `StaticSiteRoot` page as a content asset. Thus, to change a static site, you simply need to upload a new zip file asset to its root.
+This path is then used to locate a static file in a zip archive which is attached to the the `ResponseProviderRoot` page as a content asset. Thus, to change a static site, you simply need to upload a new zip file asset to its root.
 
 (Note: the system is mainly comprised of injected services. Any of these services can be swapped out, which can radically alter how it functions. This document explains how it works with the default, built-in service implementations.)
 
@@ -40,16 +40,16 @@ This path is then used to locate a static file in a zip archive which is attache
 ### Content Cloud Usage
 
 1. Compile the `src` directory into your project
-2. In Edit Mode, add and publish a `StaticSiteRoot` page somewhere in the tree
+2. In Edit Mode, add and publish a `ResponseProviderRoot` page somewhere in the tree
 3. Add your zip file as an asset _for that page_ (at the default config, the file should publish automatically; if you changed this setting, you'll need to publish it)
 
-Request the `StaticSiteRoot` in your browser. You should see the contents of `index.html`. It should load the referenced image from the subdirectory.
+Request the `ResponseProviderRoot` in your browser. You should see the contents of `index.html`. It should load the referenced image from the subdirectory.
 
-If you add `images/[image-name.jpg]` onto the URL of `StaticSiteRoot` page, you should see the image directly.
+If you add `images/[image-name.jpg]` onto the URL of `ResponseProviderRoot` page, you should see the image directly.
 
 ## Commands
 
-There are several "magic" URL paths that will perform actions or provide information when called on a `StaticSiteRoot` (note: the below are *double* underscores):
+There are several "magic" URL paths that will perform actions or provide information when called on a `ResponseProviderRoot` (note: the below are *double* underscores):
 
 * **__contents:** Will display the contents of the zip archive
 * **__context:** Will return a JSON payload of information about the static site:
@@ -60,7 +60,7 @@ There are several "magic" URL paths that will perform actions or provide informa
 * **__clear:** Clears the cache of a static site
 * **__asset/[filename]:** Returns the content of a file stored outside the zip archive, in the local assets for the static site content object. This is intended to be used as the target of a `LINK`, `SCRIPT`, or `IMG` tag.
 
-This is extensible. New commands can be registered in `StaticSiteCommands`.
+This is extensible. New commands can be registered in `ResponseProviderCommands`.
 
 Presently, none of these command paths are authenticated.
 
@@ -68,22 +68,22 @@ Presently, none of these command paths are authenticated.
 
 To translate an inbound path to a path that can be retrieved, the default service (derived from `IStaticPathTranslator`) follows this logic:
 
-* The inbound URL (in full) is trimmed from the start with the URL from the `StaticSiteRoot`
+* The inbound URL (in full) is trimmed from the start with the URL from the `ResponseProviderRoot`
 * If the remaining URL ends in a slash, then the default document is appended (by default, this is `index.html`, but it's a public property on `IStaticPathTranslator` if you want to change ut)
 * The leading slash is trimmed
 
-So, if the `StaticSiteRoot` is at `/foo/bar/` and you request `/foo/bar/baz/`, that will be translated into `baz/index.html` for retrieval by `IStaticSiteResourceProvider`.
+So, if the `ResponseProviderRoot` is at `/foo/bar/` and you request `/foo/bar/baz/`, that will be translated into `baz/index.html` for retrieval by `IResponseProviderResponseProvider`.
 
 If nothing is found, the resource provider will look for something at `404.html` (also a public property on `IStaticPathTranslator`, if you want to change it). If it finds something there, the contents will be retuned with a 404 status code. If nothing is found there, the controller will return a `NotFoundResult` which will be handled however you configured it.
 
 ## Resource Retrieval
 
-The translated path (from above) is passed to an implementation of `IStaticResourceProvider`. That service responds with a payload of bytes which represents the resource.
+The translated path (from above) is passed to an implementation of `IStaticResponseProvider`. That service responds with a payload of bytes which represents the resource.
 
 The default service implementation retrieves the resource from a zip file stored in the repository. It uses the following logic to find the asset (it uses the first one that it finds):
 
 1. If the `ArchiveFile` property is populated, it will use that reference (this is so multiple static sites can use the same zip file of assets)
-2. If an asset attached to the `StaticSiteRoot` is named `_source.zip`
+2. If an asset attached to the `ResponseProviderRoot` is named `_source.zip`
 3. The first `.zip` asset it finds attached to the content object
 
 (In most cases, falling through to #3 is fine. You only need to do #1 if you want to use the same file in multiple places, and only need to use #2 if you'll have more than one zip file attached to the object.)
@@ -113,13 +113,13 @@ Static resources can be transformed after retrieval, before they are sent back i
 
 Transformation is _not_ done in "real time." The transforms are cached for future requests.
 
-A transformer is a class that implements `ITransformer` and provides a `Transform` method. Instances of these classes need to be registered with the `IStaticSiteTransformerManager` service.
+A transformer is a class that implements `ITransformer` and provides a `Transform` method. Instances of these classes need to be registered with the `IResponseProviderTransformerManager` service.
 
 ```csharp
-var _staticSiteTransformerManager = ServiceLocator.Current.GetInstance<IStaticSiteTransformerManager>();
-_staticSiteTransformerManager.Transformers.Add(new AddScriptTag("http://example.com/deane.js"));
-_staticSiteTransformerManager.Transformers.Add(new RemoveRemoteScripts());
-_staticSiteTransformerManager.Transformers.Add(new EnsureDocType());
+var _ResponseProviderTransformerManager = ServiceLocator.Current.GetInstance<IResponseProviderTransformerManager>();
+_ResponseProviderTransformerManager.Transformers.Add(new AddScriptTag("http://example.com/deane.js"));
+_ResponseProviderTransformerManager.Transformers.Add(new RemoveRemoteScripts());
+_ResponseProviderTransformerManager.Transformers.Add(new EnsureDocType());
 ```
 
 _Every_ registered transformer executes for _every_ resource. You need to provide logic inside `Transform` to control when it _should_ alter the bytes. For example:

@@ -1,40 +1,39 @@
-﻿using EPiServer;
+﻿using DeaneBarker.Optimizely.ResponseProviders.Models;
+using DeaneBarker.Optimizely.ResponseProviders.Services;
+using EPiServer;
 using EPiServer.Core;
 using EPiServer.Framework.Blobs;
 using EPiServer.ServiceLocation;
 using EPiServer.Web.Routing;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using DeaneBarker.Optimizely.StaticSites.Services;
-using DeaneBarker.Optimizely.StaticSites.Models;
 using System;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Text.Json;
 
-namespace DeaneBarker.Optimizely.StaticSites
+namespace DeaneBarker.Optimizely.ResponseProviders
 {
-    public static class StaticSiteCommands
+    public static class ResponseProviderCommands
     {
         private static readonly string[] allowedExtensions = new[] { ".js", ".css", ".json" };
 
         private static IMimeTypeManager _mimeTypeMap;
         private static IUrlResolver _urlResolver;
         private static IHttpContextAccessor _httpContext;
-        private static IStaticResourceProvider _staticResourceRetriever;
-        private static IStaticSiteCache _staticSiteCache;
+        private static ISourceProvider _staticResourceRetriever;
+        private static IResponseProviderCache _ResponseProviderCache;
 
-        static StaticSiteCommands()
+        static ResponseProviderCommands()
         {
             _mimeTypeMap = ServiceLocator.Current.GetInstance<IMimeTypeManager>();
             _httpContext = ServiceLocator.Current.GetInstance<IHttpContextAccessor>();
             _urlResolver = ServiceLocator.Current.GetInstance<IUrlResolver>();
-            _staticResourceRetriever = ServiceLocator.Current.GetInstance<IStaticResourceProvider>();
-            _staticSiteCache = ServiceLocator.Current.GetInstance<IStaticSiteCache>();
+            _staticResourceRetriever = ServiceLocator.Current.GetInstance<ISourceProvider>();
+            _ResponseProviderCache = ServiceLocator.Current.GetInstance<IResponseProviderCache>();
         }
 
-        public static ActionResult ShowAsset(StaticSiteRoot currentPage, string path)
+        public static ActionResult ShowAsset(BaseResponseProvider currentPage, string path)
         {
             var extension = Path.GetExtension(path);
             if (!allowedExtensions.Contains(extension))
@@ -61,20 +60,20 @@ namespace DeaneBarker.Optimizely.StaticSites
             };
         }
 
-        public static ActionResult ShowContext(StaticSiteRoot staticSiteRoot, string _)
+        public static ActionResult ShowContext(BaseResponseProvider currentPage, string _)
         {
 
             var contextVars = new
             {
-                rootId = staticSiteRoot.ContentLink.ID,
-                baseUrl = _urlResolver.GetUrl(staticSiteRoot),
+                rootId = ((PageData)currentPage).ContentLink.ID,
+                baseUrl = _urlResolver.GetUrl((PageData)currentPage),
                 userName = _httpContext.HttpContext.User?.Identity?.Name
             };
 
             return new JsonResult(contextVars);
         }
 
-        public static ActionResult ShowContents(StaticSiteRoot currentPage, string _)
+        public static ActionResult ShowContents(BaseResponseProvider currentPage, string _)
         {
             var resources = _staticResourceRetriever.GetResourceNames(currentPage);
 
@@ -93,9 +92,9 @@ namespace DeaneBarker.Optimizely.StaticSites
             };
         }
 
-        public static ActionResult ShowCache(StaticSiteRoot currentPage, string _)
+        public static ActionResult ShowCache(BaseResponseProvider currentPage, string _)
         {
-            var lines = _staticSiteCache.Show(currentPage.ContentGuid);
+            var lines = _ResponseProviderCache.Show(((PageData)currentPage).ContentGuid);
             return new ContentResult()
             {
                 Content = string.Join(Environment.NewLine, lines),
@@ -103,10 +102,10 @@ namespace DeaneBarker.Optimizely.StaticSites
             };
         }
 
-        public static ActionResult ClearCache(StaticSiteRoot currentPage, string _)
+        public static ActionResult ClearCache(BaseResponseProvider currentPage, string _)
         {
 
-            _staticSiteCache.Clear(currentPage.ContentGuid);
+            _ResponseProviderCache.Clear(((PageData)currentPage).ContentGuid);
             return new ContentResult()
             {
                 Content = "Cache Cleared",
@@ -114,9 +113,9 @@ namespace DeaneBarker.Optimizely.StaticSites
             };
         }
 
-        public static ActionResult ShowLog(StaticSiteRoot currentPage, string _)
+        public static ActionResult ShowLog(BaseResponseProvider currentPage, string _)
         {
-            var _log = ServiceLocator.Current.GetInstance<IStaticSiteLog>();
+            var _log = ServiceLocator.Current.GetInstance<IResponseProviderLog>();
             return new ContentResult()
             {
                 Content = string.Join(Environment.NewLine, _log.Entries),

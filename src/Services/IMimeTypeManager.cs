@@ -1,4 +1,4 @@
-﻿namespace DeaneBarker.Optimizely.StaticSites.Services
+﻿namespace DeaneBarker.Optimizely.ResponseProviders.Services
 {
     public interface IMimeTypeManager
     {
