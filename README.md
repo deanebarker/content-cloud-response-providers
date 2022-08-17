@@ -1,86 +1,106 @@
 # Content Cloud Static Websites
 
-This library allows you to serve entire sections of static-file based content from Content Cloud which are _managed as content_, not code.
+This library allows you to provide responses from external sources for entire sections of the URL path to a Content Cloud instance -- even the entire path, if you like.
 
-The sites can either be the entire domain, or just a branch of URLs. It effectively turns a single page into a web server which will respond to requests with the contents of managed files. Those files can be updated directly from the Edit Mode UI and do not require a code deploy.
+For example:
 
-At the default service implementation, the static resources are stored in a zip file uploaded to the repository as `MediaData` (see "Resource Retrieval" below).
+* A site or section in Content Cloud could be served from HTML, JS, and CSS files stored in the CMS itself as a zip file media asset
+* A site or section could be served the same way, except from a directory of files on the server's file system
+* A site or section could be served by making server-side HTTP calls to another website; effectively a proxy
 
-The existence of a static site does not affect any other functionality in Content Cloud. If it's confined to a branch of the page tree, it will be used only for URLs under its point in the tree. Additionally, it does not affect the operation of any of the headless content APIs.
+(Note: these three options are provided out of the box.)
+
+It's noted as "site or section," because this method works if used from the start page (so the entire site is served this way), or from a page further down the tree (so it only activates on paths "below" that page).
 
 [Why would someone want to do this?](docs/why.md) (I promise there are some good reasons.)
 
+It's quite easy to extend, so responses can theoretically formed from any external resource.
+
 ## Background: How Partial Routers Work
 
-Static site hosting is accomplished via a "partial router," which is a Content Cloud feature (specifically, it's an implementation of the `IPartialRouter<T,T>` interface).
+This functionality is accomplished via a "partial router," which is a feature of the Content Cloud API (specifically, it's an implementation of the `IPartialRouter<T,T>` interface).
 
 In Content Cloud, URLs are resolved segment-by-segment, from left to right. The leftmost segment is matched to a page, then the next segment is matched to a child page of the first one, and so on, until all segments have been resolved and the desired page is produced.
 
-A partial router can interrupt this process when it finds a specified page type. In general terms, when the resolution process produces a  page of this type for any segment, the partial router will activate, intercept the rest of the URL (all the segments to the "right" of the current page), and change what page is produced.
+A partial router can interrupt this process when it finds a specified page type. In general terms, when the resolution process produces a page of this type for any segment, the partial router will activate, intercept the rest of the URL (all the segments to the "right" of the current page), and change what page is produced.
 
 For example, partial routers are often used for pagination, so you can enable URLs like `/news/page/2`, etc. The `page/2` part never exists as an actual page, but a partial router would activate on whatever page it finds at `/news/`, abandon further resolution, and pass `page/2` to the controller.
 
-The Static Site system works by introducing a page type called `ResponseProviderRoot` and a partial router which is bound to it. When this page type is produced in the URL resolution process (at any segment), further resolution is abandoned, so the same `ResponseProviderRoot` page will be returned for *all* URLs "downstream" of its location. The remaining path will then be passed to the `ResponseProviderRoot` page's controller to produce output.
+The resource provider system works by introducing a base page type called `BaseResponseProvider` and a partial router which is bound to it. When any content that extends from this type is produced in the URL resolution process (at any segment), further resolution is abandoned, so the same `BaseResponseProvider` page will be returned for *all* URLs "downstream" of its location. The remaining path will then be passed to the `ResponseProviderController` to produce output.
 
-This path is then used to locate a static file in a zip archive which is attached to the the `ResponseProviderRoot` page as a content asset. Thus, to change a static site, you simply need to upload a new zip file asset to its root.
+For example:
 
-(Note: the system is mainly comprised of injected services. Any of these services can be swapped out, which can radically alter how it functions. This document explains how it works with the default, built-in service implementations.)
+* This path can be used to locate a static file in a zip archive which is attached to the the `BaseResponseProvider` page as a content asset. Thus, to change a static site, you simply need to upload a new zip file asset to its root.
+* This path can be used to locate a file on the file system
+* This path can be used to make an HTTP proxy call to another website
+
+(Note: these three options are provided out of the box.)
 
 ## Getting Started
 
-### The Static Site
+Create a static website on your local file system. For now, keep all the paths (IMG, SCRIPT, LINK, etc.) relative (so they don't start with "/"), and the default document should be `index.html` (all this can be changed later).
 
-1. Create a static HTML page called `index.html`. Put some content in it.
-2. Create a directory called `images` next to your HTML file. Put an image in it.
-3. Add the image to your HTML file via an `IMG` tag with a relative URL (so: `images/[image-name.jpg]`).
-2. Zip these files (note: zip _the file and folder themselves_, not the directory they're contained in)
+For testing, this could be as simple as a single "index.html" file.
 
-(Clearly, this is very simple. Your static site can be comprised of whatever you want, this example is just the simplest possible static site we can create.)
+Zip all the files (_not_ the directory they're in; highlight all the files, and zip them directly).
 
 ### Content Cloud Usage
 
 1. Compile the `src` directory into your project
-2. In Edit Mode, add and publish a `ResponseProviderRoot` page somewhere in the tree
+2. In Edit Mode, add and publish a `Zip Archive Site Root` page somewhere in the tree
 3. Add your zip file as an asset _for that page_ (at the default config, the file should publish automatically; if you changed this setting, you'll need to publish it)
 
-Request the `ResponseProviderRoot` in your browser. You should see the contents of `index.html`. It should load the referenced image from the subdirectory.
-
-If you add `images/[image-name.jpg]` onto the URL of `ResponseProviderRoot` page, you should see the image directly.
+Request the `Zip Archive Site Root` in your browser. You should see the contents of `index.html`. Any embedded links -- `A@HREF`, `LINK@HREF, `SCRIPT@SRC`, `IMG@SRC`, etc. -- should also work.
 
 ## Commands
 
-There are several "magic" URL paths that will perform actions or provide information when called on a `ResponseProviderRoot` (note: the below are *double* underscores):
+There are several "magic" URL paths that will perform actions or provide information when called on a `BaseResponseProvider` (note: the below are *double* underscores):
 
-* **__contents:** Will display the contents of the zip archive
-* **__context:** Will return a JSON payload of information about the static site:
-  * **rootID:** The content object ID for the site
-  * **baseUrl:** The base path to the site
+* **__contents:** Will display the contents of external resource (the zip file, in our example above)
+
+* **__context:** Will return a JSON payload of information about the resource provider's mounting point, and the current user
+
+  * **rootID:** The content object ID for the resource provider
+  
+  * **baseUrl:** The base path to the resource provider
+  
   * **userName:** The username of the authenticated user. If unauthenticated, this will be `null`
-* **__cache:** The paths which have been cached for a static site
-* **__clear:** Clears the cache of a static site
-* **__asset/[filename]:** Returns the content of a file stored outside the zip archive, in the local assets for the static site content object. This is intended to be used as the target of a `LINK`, `SCRIPT`, or `IMG` tag.
 
-This is extensible. New commands can be registered in `ResponseProviderCommands`.
+* **__cache:** The paths which have been cached for a resource provider
+
+* **__clear:** Clears the cache of a resource provider
+
+This is extensible. New commands can be registered in `ResponseProviderCommandManager`.
 
 Presently, none of these command paths are authenticated.
 
 ## Path Translation
 
-To translate an inbound path to a path that can be retrieved, the default service (derived from `IStaticPathTranslator`) follows this logic:
+The inbound path is passed to an implementation of `IResponseProviderPathTranslator` to get a path that can be used on the external resource.
 
-* The inbound URL (in full) is trimmed from the start with the URL from the `ResponseProviderRoot`
-* If the remaining URL ends in a slash, then the default document is appended (by default, this is `index.html`, but it's a public property on `IStaticPathTranslator` if you want to change ut)
+### ZipArchiveResourceProvider and FileSystemResourceProvider
+
+These two resource providers use the `FileSystemPathTranslator`, which does the following:
+
+* The inbound URL (in full) is trimmed from the start with the URL from the `BaseResponseProvider`
+* If the remaining URL ends in a slash, then the default document is appended (by default, this is `index.html`, but it's a public property on `FileSystemPathTranslator` if you want to change ut)
 * The leading slash is trimmed
 
-So, if the `ResponseProviderRoot` is at `/foo/bar/` and you request `/foo/bar/baz/`, that will be translated into `baz/index.html` for retrieval by `IResponseProviderResponseProvider`.
+So, if the `BaseResponseProvider` is at `/foo/bar/` and you request `/foo/bar/baz/`, that will be translated into `baz/index.html` for retrieval by `ISourceProvider`.
 
-If nothing is found, the resource provider will look for something at `404.html` (also a public property on `IStaticPathTranslator`, if you want to change it). If it finds something there, the contents will be retuned with a 404 status code. If nothing is found there, the controller will return a `NotFoundResult` which will be handled however you configured it.
+If nothing is found, the resource provider will look for something at `404.html` (also a public property on `FileSystemPathTranslator`, if you want to change it). If it finds something there, the contents will be retuned with a 404 status code. If nothing is found there, the controller will return a `NotFoundResult` which will be handled however you configured it.
+
+### ProxyResourceProvider
+
+[coming soon]
 
 ## Resource Retrieval
 
-The translated path (from above) is passed to an implementation of `IStaticResponseProvider`. That service responds with a payload of bytes which represents the resource.
+The translated path (from above) is passed to an implementation of `ISourceProvider`. That service responds with a payload of bytes which represents the resource.
 
-The default service implementation retrieves the resource from a zip file stored in the repository. It uses the following logic to find the asset (it uses the first one that it finds):
+### ZipArchiveResourceProvider
+
+This implementation retrieves the resource from a zip file stored in the repository. It uses the following logic to find the asset (it uses the first one that it finds):
 
 1. If the `ArchiveFile` property is populated, it will use that reference (this is so multiple static sites can use the same zip file of assets)
 2. If an asset attached to the `ResponseProviderRoot` is named `_source.zip`
@@ -92,9 +112,17 @@ Once the zip file is located, the translated path is used to return the bytes of
 
 There is no need to know or care what the type of resource is (HTML file, image, etc.). The response is formed solely from the bytes, and the `ContentType` is generated from the requested path (see below).
 
+### FileSystemResourceProvider
+
+This implementation appends the translated path onto a file system path stored on the `FileSystemResourceProvider` content object itself. It reads the resulting path from the server's file system.
+
+### ProxyResourceProvider
+
+This implementation appends the translated path path onto a URL stored on the `ProxyResourceProvider` content object itself. It makes an HTTP GET request and returns the resulting bytes.
+
 ## MIME/Content Type Determination
 
-After path translation, there should always be a file extension. I delegate MIME determination to the `FileExtensionContentTypeProvider` (this is handled in `IMimeTypeManager` if you want to customize it).
+After path translation, there should always be a file extension. MIME determination is delegated to the `FileExtensionContentTypeProvider` (this is handled in `IMimeTypeManager` if you want to customize it).
 
 Based on the MIME type, I have some logic to determine if the resource contents are text or not (so I know whether to return a `ContentResult` or `FileContentResult`). The logic is:
 
@@ -116,16 +144,16 @@ Transformation is _not_ done in "real time." The transforms are cached for futur
 A transformer is a class that implements `ITransformer` and provides a `Transform` method. Instances of these classes need to be registered with the `IResponseProviderTransformerManager` service.
 
 ```csharp
-var _ResponseProviderTransformerManager = ServiceLocator.Current.GetInstance<IResponseProviderTransformerManager>();
-_ResponseProviderTransformerManager.Transformers.Add(new AddScriptTag("http://example.com/deane.js"));
-_ResponseProviderTransformerManager.Transformers.Add(new RemoveRemoteScripts());
-_ResponseProviderTransformerManager.Transformers.Add(new EnsureDocType());
+var _responseProviderTransformerManager = ServiceLocator.Current.GetInstance<IResponseProviderTransformerManager>();
+_responseProviderTransformerManager.Transformers.Add(new AddScriptTag("http://example.com/deane.js"));
+_responseProviderTransformerManager.Transformers.Add(new RemoveRemoteScripts());
+_responseProviderTransformerManager.Transformers.Add(new EnsureDocType());
 ```
 
 _Every_ registered transformer executes for _every_ resource. You need to provide logic inside `Transform` to control when it _should_ alter the bytes. For example:
 
 ```csharp
-public byte[] Transform(byte[] content, string path, string mimeType)
+public byte[] Transform(byte[] content, string path, BaseResponseProvider root, string mimeType);
 {
   if (mimeType != "text/html") return content; // Not HTML; abandon
   
