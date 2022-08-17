@@ -16,13 +16,15 @@ namespace DeaneBarker.Optimizely.ResponseProviders
     {
         private const string defaultArchiveName = "_source.zip";
         private readonly IContentLoader _loader;
+        private readonly IMimeTypeManager _mimeTypeManager;
 
-        public ZipArchiveSourceProvider(IContentLoader loader)
+        public ZipArchiveSourceProvider()
         {
-            _loader = loader;
+            _loader = ServiceLocator.Current.GetInstance<IContentLoader>();
+            _mimeTypeManager = ServiceLocator.Current.GetInstance<IMimeTypeManager>();
         }
 
-        public byte[] GetBytesOfResource(BaseResponseProvider siteRoot, string path)
+        public SourcePayload GetSourcePayload(BaseResponseProvider siteRoot, string path)
         {
             if (string.IsNullOrWhiteSpace(path))
             {
@@ -44,6 +46,11 @@ namespace DeaneBarker.Optimizely.ResponseProviders
 
             var stream = entry.Open();
 
+            var sourcePayload = new SourcePayload()
+            {
+                ContentType = _mimeTypeManager.GetMimeType(path)
+            };
+
             byte[] buffer = new byte[16 * 1024];
             using (var memoryStream = new MemoryStream())
             {
@@ -53,8 +60,10 @@ namespace DeaneBarker.Optimizely.ResponseProviders
                     memoryStream.Write(buffer, 0, read);
                 }
                 stream.Close();
-                return memoryStream.ToArray();
+                sourcePayload.Content = memoryStream.ToArray();
             }
+
+            return sourcePayload;
         }
 
         public IEnumerable<string> GetResourceNames(BaseResponseProvider siteRoot)

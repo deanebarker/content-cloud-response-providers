@@ -1,5 +1,6 @@
 ﻿using DeaneBarker.Optimizely.ResponseProviders.Services;
 using EPiServer.DataAnnotations;
+using EPiServer.ServiceLocation;
 using System.Collections.Generic;
 using System.IO;
 
@@ -22,9 +23,18 @@ namespace DeaneBarker.Optimizely.ResponseProviders.Models
 
         public class FileSystemSourceProvider : ISourceProvider
         {
-            public byte[] GetBytesOfResource(BaseResponseProvider siteRoot, string path)
+            private IMimeTypeManager mimeTypeManager;
+
+            public FileSystemSourceProvider()
             {
-                return File.ReadAllBytes(Path.Combine(((FileSystemResponseProvider)siteRoot).FileSystemPath, path));
+                mimeTypeManager = ServiceLocator.Current.GetInstance<IMimeTypeManager>();
+            }
+
+            public SourcePayload GetSourcePayload(BaseResponseProvider siteRoot, string path)
+            {
+                var content = File.ReadAllBytes(Path.Combine(((FileSystemResponseProvider)siteRoot).FileSystemPath, path));
+                var contentType = mimeTypeManager.GetMimeType(path);
+                return new SourcePayload(content, contentType);
             }
 
             public IEnumerable<string> GetResourceNames(BaseResponseProvider siteRoot)

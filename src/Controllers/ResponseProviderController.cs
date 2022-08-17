@@ -43,34 +43,34 @@ namespace DeaneBarker.Optimizely.ResponseProviders.Controllers
             // Nothing in cache, not a command, so generate a new result
             var statusCode = 200; // Assumed until proven otherwise
             var effectivePath = currentPage.GetPathTranslator().GetTranslatedPath(currentPage, path);
-            var contentType = _mimeTypeManager.GetMimeType(effectivePath); // By this point, the effectivePath should have file extension
 
             // Try to retrieve the actual bytes of what was requested
-            var bytes = currentPage.GetResponseProvider().GetBytesOfResource(currentPage, effectivePath);
-            if (bytes == null)
+            var sourcePayload = currentPage.GetResponseProvider().GetSourcePayload(currentPage, effectivePath);
+            if (sourcePayload == SourcePayload.Empty)
             {
                 // Didn't find the requested resource; try to rerieve a 404 page
-                bytes = currentPage.GetResponseProvider().GetBytesOfResource(currentPage, currentPage.GetPathTranslator().NotFoundDocument);
-                if (bytes == null)
+                sourcePayload = currentPage.GetResponseProvider().GetSourcePayload(currentPage, currentPage.GetPathTranslator().NotFoundDocument);
+                if (sourcePayload == SourcePayload.Empty)
                 {
                     return new NotFoundResult(); // Can't find the resource or a 404 page; give up
                 }
 
                 // If we got here, then we have a 404 page
                 statusCode = 404;
-                contentType = "text/html"; // I think this is a fair assumption for a 404 page?
+                sourcePayload.Content = new byte[0];
+                sourcePayload.ContentType = "text/html"; // I think this is a fair assumption for a 404 page?
             }
 
-            bytes = _ResponseProviderTransformerManager.Transform(bytes, effectivePath, currentPage, contentType);
+            sourcePayload.Content = _ResponseProviderTransformerManager.Transform(sourcePayload.Content, effectivePath, currentPage, sourcePayload.ContentType);
 
             // Form the response
-            if (_mimeTypeManager.IsText(contentType))
+            if (_mimeTypeManager.IsText(sourcePayload.ContentType))
             {
-                response = new ContentResult() { Content = Encoding.UTF8.GetString(bytes), ContentType = contentType, StatusCode = statusCode };
+                response = new ContentResult() { Content = Encoding.UTF8.GetString(sourcePayload.Content), ContentType = sourcePayload.ContentType, StatusCode = statusCode };
             }
             else
             {
-                response = new FileContentResult(bytes, contentType);
+                response = new FileContentResult(sourcePayload.Content, sourcePayload.ContentType);
             }
 
             _ResponseProviderCache.Put(siteId, path, response);

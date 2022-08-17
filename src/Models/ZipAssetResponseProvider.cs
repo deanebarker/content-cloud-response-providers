@@ -15,7 +15,7 @@ namespace DeaneBarker.Optimizely.ResponseProviders.Models
 
         public override ISourceProvider GetResponseProvider()
         {
-            return ServiceLocator.Current.GetInstance<ISourceProvider>();
+            return new ZipArchiveSourceProvider();
         }
 
         public override IResponseProviderPathTranslator GetPathTranslator()

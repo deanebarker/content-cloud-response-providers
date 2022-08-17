@@ -1,5 +1,7 @@
 ﻿using DeaneBarker.Optimizely.ResponseProviders.Services;
 using EPiServer.DataAnnotations;
+using EPiServer.ServiceLocation;
+using System;
 using System.Collections.Generic;
 using System.Net;
 
@@ -22,12 +24,34 @@ namespace DeaneBarker.Optimizely.ResponseProviders.Models
 
     public class ProxySiteSourceProvider : ISourceProvider
     {
-        public byte[] GetBytesOfResource(BaseResponseProvider siteRoot, string path)
+        private IMimeTypeManager mimeTypeManager;
+
+        public ProxySiteSourceProvider()
         {
+            mimeTypeManager = ServiceLocator.Current.GetInstance<IMimeTypeManager>();
+        }
+
+        public SourcePayload GetSourcePayload(BaseResponseProvider siteRoot, string path)
+        {
+            var sourcePayload = new SourcePayload()
+            {
+                ContentType = mimeTypeManager.GetMimeType(path)
+            };
+
             var proxySiteRoot = (ProxyResponseProvider)siteRoot;
 
             var wc = new WebClient();
-            return wc.DownloadData(string.Concat(proxySiteRoot.ProxyPath, path));
+
+            try
+            {
+                sourcePayload.Content = wc.DownloadData(string.Concat(proxySiteRoot.ProxyPath, path));
+            }
+            catch(Exception e)
+            {
+                // Just swallow it; the Content property will remain null which will trigger a 404
+            }
+
+            return sourcePayload;
         }
 
         public IEnumerable<string> GetResourceNames(BaseResponseProvider siteRoot)

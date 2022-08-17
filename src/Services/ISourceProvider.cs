@@ -7,6 +7,6 @@ namespace DeaneBarker.Optimizely.ResponseProviders.Services
     {
         IEnumerable<string> GetResourceNames(BaseResponseProvider siteRoot);
 
-        byte[] GetBytesOfResource(BaseResponseProvider siteRoot, string path);
+        SourcePayload GetSourcePayload(BaseResponseProvider siteRoot, string path);
     }
 }
