@@ -14,6 +14,10 @@ namespace DeaneBarker.Optimizely.ResponseProviders.Models
         {
             return new ProxySiteSourceProvider();
         }
+        public override IResponseProviderPathTranslator GetPathTranslator()
+        {
+            return new SimplePathTranslator();
+        }
     }
 
     public class ProxySiteSourceProvider : ISourceProvider

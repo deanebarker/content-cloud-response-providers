@@ -11,15 +11,13 @@ namespace DeaneBarker.Optimizely.ResponseProviders.Controllers
     {
         private IResponseProviderCache _ResponseProviderCache;
         private IResponseProviderCommandManager _ResponseProviderCommandManager;
-        private IResponseProviderPathTranslator _ResponseProviderPathTranslator;
         private IResponseProviderTransformerManager _ResponseProviderTransformerManager;
         private IMimeTypeManager _mimeTypeManager;
 
-        public ResponseProviderController(IResponseProviderCache ResponseProviderCache, IResponseProviderCommandManager ResponseProviderCommandManager, IResponseProviderPathTranslator ResponseProviderPathTranslator, IResponseProviderTransformerManager ResponseProviderTransformerManager, IMimeTypeManager mimeTypeManager)
+        public ResponseProviderController(IResponseProviderCache ResponseProviderCache, IResponseProviderCommandManager ResponseProviderCommandManager, IResponseProviderTransformerManager ResponseProviderTransformerManager, IMimeTypeManager mimeTypeManager)
         {
             _ResponseProviderCache = ResponseProviderCache;
             _ResponseProviderCommandManager = ResponseProviderCommandManager;
-            _ResponseProviderPathTranslator = ResponseProviderPathTranslator;
             _ResponseProviderTransformerManager = ResponseProviderTransformerManager;
             _mimeTypeManager = mimeTypeManager;
         }
@@ -44,7 +42,7 @@ namespace DeaneBarker.Optimizely.ResponseProviders.Controllers
 
             // Nothing in cache, not a command, so generate a new result
             var statusCode = 200; // Assumed until proven otherwise
-            var effectivePath = _ResponseProviderPathTranslator.GetTranslatedPath(currentPage, path);
+            var effectivePath = currentPage.GetPathTranslator().GetTranslatedPath(currentPage, path);
             var contentType = _mimeTypeManager.GetMimeType(effectivePath); // By this point, the effectivePath should have file extension
 
             // Try to retrieve the actual bytes of what was requested
@@ -52,7 +50,7 @@ namespace DeaneBarker.Optimizely.ResponseProviders.Controllers
             if (bytes == null)
             {
                 // Didn't find the requested resource; try to rerieve a 404 page
-                bytes = currentPage.GetResponseProvider().GetBytesOfResource(currentPage, _ResponseProviderPathTranslator.NotFoundDocument);
+                bytes = currentPage.GetResponseProvider().GetBytesOfResource(currentPage, currentPage.GetPathTranslator().NotFoundDocument);
                 if (bytes == null)
                 {
                     return new NotFoundResult(); // Can't find the resource or a 404 page; give up

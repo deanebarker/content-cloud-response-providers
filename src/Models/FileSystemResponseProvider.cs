@@ -10,6 +10,11 @@ namespace DeaneBarker.Optimizely.ResponseProviders.Models
     {
         public virtual string FileSystemPath { get; set; }
 
+        public override IResponseProviderPathTranslator GetPathTranslator()
+        {
+            return new FileSystemPathTranslator();
+        }
+
         public override ISourceProvider GetResponseProvider()
         {
             return new FileSystemSourceProvider();

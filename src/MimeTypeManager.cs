@@ -6,6 +6,8 @@ namespace DeaneBarker.Optimizely.ResponseProviders
 {
     public class MimeTypeManager : IMimeTypeManager
     {
+        public string DefaultMimeType = "text/html";
+
         public List<string> AdditionalTextMimeTypes = new() {
             "application/javascript",
             "application/x-javascript", // Weird, but it's out there
@@ -18,7 +20,7 @@ namespace DeaneBarker.Optimizely.ResponseProviders
         public string GetMimeType(string path)
         {
             new FileExtensionContentTypeProvider().TryGetContentType(path, out var contentType);
-            return contentType ?? "text/plain";
+            return contentType ?? DefaultMimeType;
         }
 
         public bool IsText(string mimeType)

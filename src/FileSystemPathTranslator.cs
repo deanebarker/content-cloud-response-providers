@@ -1,34 +1,28 @@
 ﻿using DeaneBarker.Optimizely.ResponseProviders.Models;
 using DeaneBarker.Optimizely.ResponseProviders.Services;
 using EPiServer.Core;
+using EPiServer.ServiceLocation;
 using EPiServer.Web.Routing;
 
 namespace DeaneBarker.Optimizely.ResponseProviders
 {
-    public class FileSystemPathTranslator : IResponseProviderPathTranslator
+    public class FileSystemPathTranslator : SimplePathTranslator, IResponseProviderPathTranslator
     {
         // Public so you can change them if you like
-        public string DefaultDocument { get; set; } = "index.html";
-        public string NotFoundDocument { get; set; } = "404.html";
+        public new string DefaultDocument { get; set; } = "index.html";
+        public new string NotFoundDocument { get; set; } = "404.html";
 
 
         private IUrlResolver _urlResolver;
 
-        public FileSystemPathTranslator(IUrlResolver urlResolver)
+        public FileSystemPathTranslator()
         {
-            _urlResolver = urlResolver;
+            _urlResolver = ServiceLocator.Current.GetInstance<UrlResolver>();
         }
 
-        public string GetTranslatedPath(BaseResponseProvider siteRoot, string requestedPath)
+        public new string GetTranslatedPath(BaseResponseProvider siteRoot, string requestedPath)
         {
-            var pathToRoot = _urlResolver.GetUrl((PageData)siteRoot).TrimStart('/');
-            requestedPath = requestedPath.TrimStart('/');
-
-            string relativePath = "/";
-            if (requestedPath != pathToRoot)
-            {
-                relativePath = requestedPath == string.Empty | requestedPath == "/" ? "/" : requestedPath.Substring(pathToRoot.Length, requestedPath.Length - pathToRoot.Length);
-            }
+            var relativePath = base.GetTranslatedPath(siteRoot, requestedPath);
 
             if (relativePath.EndsWith("/") || string.IsNullOrWhiteSpace(relativePath))
             {

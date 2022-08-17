@@ -17,5 +17,10 @@ namespace DeaneBarker.Optimizely.ResponseProviders.Models
         {
             return ServiceLocator.Current.GetInstance<ISourceProvider>();
         }
+
+        public override IResponseProviderPathTranslator GetPathTranslator()
+        {
+            return new FileSystemPathTranslator();
+        }
     }
 }
