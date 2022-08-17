@@ -1,4 +1,4 @@
-# Content Cloud Static Websites
+# Content Cloud Response Providers
 
 This library allows you to provide responses from external sources for entire sections of the URL path to a Content Cloud instance -- even the entire path, if you like.
 
