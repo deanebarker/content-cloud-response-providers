@@ -78,21 +78,22 @@ Presently, none of these command paths are authenticated.
 
 The inbound path is passed to an implementation of `IResponseProviderPathTranslator` to get a path that can be used on the external resource.
 
-### ZipArchiveResourceProvider and FileSystemResourceProvider
-
-These two resource providers use the `FileSystemPathTranslator`, which does the following:
-
-* The inbound URL (in full) is trimmed from the start with the URL from the `BaseResponseProvider`
-* If the remaining URL ends in a slash, then the default document is appended (by default, this is `index.html`, but it's a public property on `FileSystemPathTranslator` if you want to change ut)
-* The leading slash is trimmed
-
-So, if the `BaseResponseProvider` is at `/foo/bar/` and you request `/foo/bar/baz/`, that will be translated into `baz/index.html` for retrieval by `ISourceProvider`.
-
-If nothing is found, the resource provider will look for something at `404.html` (also a public property on `FileSystemPathTranslator`, if you want to change it). If it finds something there, the contents will be retuned with a 404 status code. If nothing is found there, the controller will return a `NotFoundResult` which will be handled however you configured it.
-
 ### ProxyResourceProvider
 
-[coming soon]
+This uses `SimplePathTranslator` which does the following:
+
+* The inbound URL (in full) is trimmed from the start with the URL from the `BaseResponseProvider`
+* The leading slash is trimmed
+
+So, if the `BaseResponseProvider` is at `/foo/bar/` and you request `/foo/bar/baz/`, that will be translated into `baz` for retrieval by `ISourceProvider`.
+
+### ZipArchiveResourceProvider and FileSystemResourceProvider
+
+These two resource providers use the `FileSystemPathTranslator`, which extends from `SimplePathTranslator`. It just adds another step:
+
+* If the remaining URL ends in a slash, then the default document is appended (by default, this is `index.html`, but it's a public property on `FileSystemPathTranslator` if you want to change ut)
+
+So, if the `BaseResponseProvider` is at `/foo/bar/` and you request `/foo/bar/baz/`, that will be translated into `baz/index.html` for retrieval by `ISourceProvider`.
 
 ## Resource Retrieval
 
