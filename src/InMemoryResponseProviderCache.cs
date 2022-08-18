@@ -36,6 +36,7 @@ namespace DeaneBarker.Optimizely.ResponseProviders
 
         public IEnumerable<string> Show(Guid siteId)
         {
+            EnsureSiteCache(siteId);
             return cache[siteId].Keys;
         }
     }

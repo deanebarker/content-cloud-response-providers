@@ -23,6 +23,8 @@ namespace DeaneBarker.Optimizely.ResponseProviders.Models
 
         public class FileSystemSourceProvider : ISourceProvider
         {
+            public static string NotFoundDocumentName { get; set; } = "404.html";
+
             private IMimeTypeManager mimeTypeManager;
 
             public FileSystemSourceProvider()
@@ -32,9 +34,27 @@ namespace DeaneBarker.Optimizely.ResponseProviders.Models
 
             public SourcePayload GetSourcePayload(BaseResponseProvider siteRoot, string path)
             {
-                var content = File.ReadAllBytes(Path.Combine(((FileSystemResponseProvider)siteRoot).FileSystemPath, path));
-                var contentType = mimeTypeManager.GetMimeType(path);
-                return new SourcePayload(content, contentType);
+                var fullPath = Path.Combine(((FileSystemResponseProvider)siteRoot).FileSystemPath, path);
+
+                if (File.Exists(fullPath))
+                {
+                    // Found the document
+                    var content = File.ReadAllBytes(fullPath);
+                    var contentType = mimeTypeManager.GetMimeType(path);
+                    return new SourcePayload(content, contentType);
+                }
+
+                fullPath = Path.Combine(((FileSystemResponseProvider)siteRoot).FileSystemPath, NotFoundDocumentName);
+                if (File.Exists(fullPath))
+                {
+                    // Found a 404 document; soft 404
+                    var content = File.ReadAllBytes(fullPath);
+                    var contentType = mimeTypeManager.GetMimeType(path);
+                    return new SourcePayload(content, contentType) { StatusCode = 404 };
+                }
+
+                // Found nothing; hard 404
+                return SourcePayload.Empty;
             }
 
             public IEnumerable<string> GetResourceNames(BaseResponseProvider siteRoot)

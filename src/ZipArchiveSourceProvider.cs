@@ -14,7 +14,9 @@ namespace DeaneBarker.Optimizely.ResponseProviders
 {
     public class ZipArchiveSourceProvider : ISourceProvider
     {
-        private const string defaultArchiveName = "_source.zip";
+        public static string DefaultArchiveName = "_source.zip";
+        public static string NotFoundDocumentName = "404.html";
+        
         private readonly IContentLoader _loader;
         private readonly IMimeTypeManager _mimeTypeManager;
 
@@ -38,18 +40,29 @@ namespace DeaneBarker.Optimizely.ResponseProviders
                 throw new ArgumentNullException(nameof(path));
             }
 
-            var entry = zip.GetEntry(path.Trim("/".ToCharArray()));
-            if (entry == null)
-            {
-                return null;
-            }
-
-            var stream = entry.Open();
-
             var sourcePayload = new SourcePayload()
             {
                 ContentType = _mimeTypeManager.GetMimeType(path)
             };
+
+            var entry = zip.GetEntry(path.Trim("/".ToCharArray()));
+            if (entry == null)
+            {
+                entry = zip.GetEntry(NotFoundDocumentName);
+                if (entry == null)
+                {
+                    // Nothing was found, return an empty result
+                    // We don't need to set the status code, since the result is empty
+                    return SourcePayload.Empty;
+                }
+                else
+                {
+                    // We found the NotFound doc, so we're going to return something, with a 404
+                    sourcePayload.StatusCode = 404;
+                }
+            }
+
+            var stream = entry.Open();
 
             byte[] buffer = new byte[16 * 1024];
             using (var memoryStream = new MemoryStream())
@@ -84,7 +97,7 @@ namespace DeaneBarker.Optimizely.ResponseProviders
                 var assetFolder = contentAssetHelper.GetOrCreateAssetFolder(((IContent)siteRoot).ContentLink);
                 var assets = _loader.GetChildren<MediaData>(assetFolder.ContentLink);
 
-                archive = assets.FirstOrDefault(a => a.Name == defaultArchiveName);
+                archive = assets.FirstOrDefault(a => a.Name == DefaultArchiveName);
 
                 if (archive == null)
                 {

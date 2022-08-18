@@ -9,16 +9,16 @@ namespace DeaneBarker.Optimizely.ResponseProviders.Controllers
 {
     public class ResponseProviderController : PageController<BaseResponseProvider>
     {
-        private IResponseProviderCache _ResponseProviderCache;
-        private IResponseProviderCommandManager _ResponseProviderCommandManager;
-        private IResponseProviderTransformerManager _ResponseProviderTransformerManager;
+        private IResponseProviderCache _responseProviderCache;
+        private IResponseProviderCommandManager _responseProviderCommandManager;
+        private IResponseProviderTransformerManager _responseProviderTransformerManager;
         private IMimeTypeManager _mimeTypeManager;
 
-        public ResponseProviderController(IResponseProviderCache ResponseProviderCache, IResponseProviderCommandManager ResponseProviderCommandManager, IResponseProviderTransformerManager ResponseProviderTransformerManager, IMimeTypeManager mimeTypeManager)
+        public ResponseProviderController(IResponseProviderCache responseProviderCache, IResponseProviderCommandManager responseProviderCommandManager, IResponseProviderTransformerManager responseProviderTransformerManager, IMimeTypeManager mimeTypeManager)
         {
-            _ResponseProviderCache = ResponseProviderCache;
-            _ResponseProviderCommandManager = ResponseProviderCommandManager;
-            _ResponseProviderTransformerManager = ResponseProviderTransformerManager;
+            _responseProviderCache = responseProviderCache;
+            _responseProviderCommandManager = responseProviderCommandManager;
+            _responseProviderTransformerManager = responseProviderTransformerManager;
             _mimeTypeManager = mimeTypeManager;
         }
 
@@ -30,50 +30,43 @@ namespace DeaneBarker.Optimizely.ResponseProviders.Controllers
             ActionResult response;
 
             // Try to get the result from cache
-            response = _ResponseProviderCache.Get(siteId, path);
+            response = _responseProviderCache.Get(siteId, path);
             if (response != null) return response;
 
             // Is it a command?
-            var commandResult = _ResponseProviderCommandManager.ProcessCommands(currentPage, path);
+            var commandResult = _responseProviderCommandManager.ProcessCommands(currentPage, path);
             if (commandResult != null)
             {
                 return commandResult; // This is the result of command
             }
 
             // Nothing in cache, not a command, so generate a new result
-            var statusCode = 200; // Assumed until proven otherwise
+
+            // Translate the path
             var effectivePath = currentPage.GetPathTranslator().GetTranslatedPath(currentPage, path);
 
             // Try to retrieve the actual bytes of what was requested
             var sourcePayload = currentPage.GetResponseProvider().GetSourcePayload(currentPage, effectivePath);
-            if (sourcePayload == SourcePayload.Empty)
+            if (sourcePayload.IsEmpty)
             {
-                // Didn't find the requested resource; try to rerieve a 404 page
-                sourcePayload = currentPage.GetResponseProvider().GetSourcePayload(currentPage, currentPage.GetPathTranslator().NotFoundDocument);
-                if (sourcePayload == SourcePayload.Empty)
-                {
-                    return new NotFoundResult(); // Can't find the resource or a 404 page; give up
-                }
-
-                // If we got here, then we have a 404 page
-                statusCode = 404;
-                sourcePayload.Content = new byte[0];
-                sourcePayload.ContentType = "text/html"; // I think this is a fair assumption for a 404 page?
+                return new NotFoundResult(); // Hard 404; not found, and no 404 page
             }
 
-            sourcePayload.Content = _ResponseProviderTransformerManager.Transform(sourcePayload.Content, effectivePath, currentPage, sourcePayload.ContentType);
+            sourcePayload.Content = _responseProviderTransformerManager.Transform(sourcePayload.Content, effectivePath, currentPage, sourcePayload.ContentType);
 
             // Form the response
             if (_mimeTypeManager.IsText(sourcePayload.ContentType))
             {
-                response = new ContentResult() { Content = Encoding.UTF8.GetString(sourcePayload.Content), ContentType = sourcePayload.ContentType, StatusCode = statusCode };
+                response = new ContentResult() { Content = Encoding.UTF8.GetString(sourcePayload.Content), ContentType = sourcePayload.ContentType, StatusCode = sourcePayload.StatusCode };
             }
             else
             {
                 response = new FileContentResult(sourcePayload.Content, sourcePayload.ContentType);
+                // No need to send a status code here? If we're sending back a file, then it has to be assumed we have a response?
+                // ... is that true?
             }
 
-            _ResponseProviderCache.Put(siteId, path, response);
+            _responseProviderCache.Put(siteId, path, response);
             return response;
         }
 

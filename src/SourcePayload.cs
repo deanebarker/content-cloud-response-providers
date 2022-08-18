@@ -6,6 +6,9 @@ namespace DeaneBarker.Optimizely.ResponseProviders
     {
         public byte[] Content{ get; set; }
         public string ContentType { get; set; }
+        public int StatusCode { get; set; } = 200;
+        public bool IsEmpty => Content == null;
+        public static SourcePayload Empty => new();
 
         public SourcePayload() { }
 
@@ -14,34 +17,5 @@ namespace DeaneBarker.Optimizely.ResponseProviders
             Content = content;
             ContentType = contentType;
         }
-
-        public static SourcePayload Empty => new();
-
-        public override bool Equals(object obj)
-        {
-            if (obj == null)
-            {
-                return false;
-            }
-
-            if (!(obj is SourcePayload))
-            {
-                return false;
-            }
-
-            if(Content == null && ((SourcePayload)obj).Content == null)
-            {
-                return true;
-            }
-
-            return Content == ((SourcePayload)obj).Content;
-        }
-
-        public override int GetHashCode()
-        {
-            return Content.GetHashCode();
-        }
-    }
-
-    
+    }   
 }
