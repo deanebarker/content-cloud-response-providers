@@ -45,4 +45,10 @@ In these cases, most of the desired post-publish optimization tools (experimenta
 
 [I'll keep updating this as I remember war stories from my years in implementation services...]
 
+## Micro UIs
 
+In some cases, you might have users that need to do one _very_ specific thing in the CMS. You don't want to train them, you just want to give them a laser-focused UI to use.
+
+Example: I did an intranet once, and the daily lunch menu was updated by the receptionist, who was a lovely 60-year-old woman who could have never survived any CMS environment. We literally built her a page with a single textbox that loaded from, then updated a _single_ property on a _single_ content object. We even checked if the textbox had changed before the page unloaded, and popped a box that said, "Linda, did you mean to press SAVE first?"
+
+It might be much easier for you to create focused UI for that specific task using our OAuth, Content Delivery, and Content Management APIs, then roll that up into a zip file and deploy it as a static site. The user would never have to interact with the CMS UI, and you could manage permissions on it through the CMS repository, ensuring that only one user could access it.
