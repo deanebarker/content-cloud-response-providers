@@ -1,5 +1,6 @@
-﻿using DeaneBarker.Optimizely.ResponseProviders.Models;
-using DeaneBarker.Optimizely.ResponseProviders.Services;
+﻿using DeaneBarker.Optimizely.ResponseProviders.Caches;
+using DeaneBarker.Optimizely.ResponseProviders.Models;
+using DeaneBarker.Optimizely.ResponseProviders.SourceProviders;
 using EPiServer;
 using EPiServer.Core;
 using EPiServer.Framework.Blobs;
@@ -12,7 +13,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace DeaneBarker.Optimizely.ResponseProviders
+namespace DeaneBarker.Optimizely.ResponseProviders.Commands
 {
     public static class ResponseProviderCommands
     {

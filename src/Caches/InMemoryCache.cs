@@ -1,12 +1,11 @@
-﻿using DeaneBarker.Optimizely.ResponseProviders.Services;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 
-namespace DeaneBarker.Optimizely.ResponseProviders
+namespace DeaneBarker.Optimizely.ResponseProviders.Caches
 {
-    public class InMemoryResponseProviderCache : IResponseProviderCache
+    public class InMemoryCache : IResponseProviderCache
     {
         private ConcurrentDictionary<Guid, ConcurrentDictionary<string, ActionResult>> cache = new();
 

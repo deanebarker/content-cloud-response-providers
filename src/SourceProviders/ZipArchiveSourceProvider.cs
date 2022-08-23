@@ -1,5 +1,4 @@
 ﻿using DeaneBarker.Optimizely.ResponseProviders.Models;
-using DeaneBarker.Optimizely.ResponseProviders.Services;
 using EPiServer;
 using EPiServer.Core;
 using EPiServer.Framework.Blobs;
@@ -10,13 +9,13 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 
-namespace DeaneBarker.Optimizely.ResponseProviders
+namespace DeaneBarker.Optimizely.ResponseProviders.SourceProviders
 {
     public class ZipArchiveSourceProvider : ISourceProvider
     {
         public static string DefaultArchiveName = "_source.zip";
         public static string NotFoundDocumentName = "404.html";
-        
+
         private readonly IContentLoader _loader;
         private readonly IMimeTypeManager _mimeTypeManager;
 

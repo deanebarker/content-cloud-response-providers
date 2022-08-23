@@ -1,5 +1,4 @@
-﻿using DeaneBarker.Optimizely.ResponseProviders.Services;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace DeaneBarker.Optimizely.ResponseProviders
 {

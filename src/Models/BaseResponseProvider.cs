@@ -1,4 +1,5 @@
-﻿using DeaneBarker.Optimizely.ResponseProviders.Services;
+﻿using DeaneBarker.Optimizely.ResponseProviders.PathTranslators;
+using DeaneBarker.Optimizely.ResponseProviders.SourceProviders;
 using EPiServer.Core;
 
 namespace DeaneBarker.Optimizely.ResponseProviders.Models

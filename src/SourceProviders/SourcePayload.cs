@@ -1,10 +1,8 @@
-﻿using System;
-
-namespace DeaneBarker.Optimizely.ResponseProviders
+﻿namespace DeaneBarker.Optimizely.ResponseProviders.SourceProviders
 {
     public class SourcePayload
     {
-        public byte[] Content{ get; set; }
+        public byte[] Content { get; set; }
         public string ContentType { get; set; }
         public int StatusCode { get; set; } = 200;
         public bool IsEmpty => Content == null;
@@ -17,5 +15,5 @@ namespace DeaneBarker.Optimizely.ResponseProviders
             Content = content;
             ContentType = contentType;
         }
-    }   
+    }
 }

@@ -1,7 +1,11 @@
-﻿using DeaneBarker.Optimizely.ResponseProviders.Models;
-using DeaneBarker.Optimizely.ResponseProviders.Services;
+﻿using DeaneBarker.Optimizely.ResponseProviders.Caches;
+using DeaneBarker.Optimizely.ResponseProviders.Commands;
+using DeaneBarker.Optimizely.ResponseProviders.Models;
 using DeaneBarker.Optimizely.ResponseProviders.Transformers;
+using DeaneBarker.Optimizely.ResponseProviders.UserManagers;
+using EPiServer.Web;
 using EPiServer.Web.Mvc;
+using EPiServer.Web.Routing;
 using Microsoft.AspNetCore.Mvc;
 using System.Text;
 
@@ -13,25 +17,42 @@ namespace DeaneBarker.Optimizely.ResponseProviders.Controllers
         private IResponseProviderCommandManager _responseProviderCommandManager;
         private IResponseProviderTransformerManager _responseProviderTransformerManager;
         private IMimeTypeManager _mimeTypeManager;
+        private IContextModeResolver _contextModeResolver;
+        private UrlResolver _urlResolver;
+        private IResponseProviderUserManager _responseProviderUserManager;
 
-        public ResponseProviderController(IResponseProviderCache responseProviderCache, IResponseProviderCommandManager responseProviderCommandManager, IResponseProviderTransformerManager responseProviderTransformerManager, IMimeTypeManager mimeTypeManager)
+        public ResponseProviderController(IResponseProviderUserManager responseProviderUserManager, UrlResolver urlResolver, IContextModeResolver contextModeResolver, IResponseProviderCache responseProviderCache, IResponseProviderCommandManager responseProviderCommandManager, IResponseProviderTransformerManager responseProviderTransformerManager, IMimeTypeManager mimeTypeManager)
         {
             _responseProviderCache = responseProviderCache;
             _responseProviderCommandManager = responseProviderCommandManager;
             _responseProviderTransformerManager = responseProviderTransformerManager;
             _mimeTypeManager = mimeTypeManager;
+            _contextModeResolver = contextModeResolver;
+            _urlResolver = urlResolver;
+            _responseProviderUserManager = responseProviderUserManager;
         }
 
         public ActionResult Index(BaseResponseProvider currentPage)
         {
+            // This is a complete hack
+            // What should we do in Edit Mode?
+            if (_contextModeResolver.CurrentMode == ContextMode.Edit)
+            {
+                return new ContentResult() { Content = string.Empty };
+            }
+
             var siteId = currentPage.ContentGuid;
             var path = Request.Path.ToString();
+            var useCache = _responseProviderUserManager.ShouldUseCache(currentPage);
 
             ActionResult response;
 
             // Try to get the result from cache
-            response = _responseProviderCache.Get(siteId, path);
-            if (response != null) return response;
+            if (useCache)
+            {
+                response = _responseProviderCache.Get(siteId, path);
+                if (response != null) return response;
+            }
 
             // Is it a command?
             var commandResult = _responseProviderCommandManager.ProcessCommands(currentPage, path);
@@ -66,7 +87,12 @@ namespace DeaneBarker.Optimizely.ResponseProviders.Controllers
                 // ... is that true?
             }
 
-            _responseProviderCache.Put(siteId, path, response);
+            // Put the response in cache
+            if (useCache)
+            {
+                _responseProviderCache.Put(siteId, path, response);
+            }
+
             return response;
         }
 

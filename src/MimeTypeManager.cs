@@ -1,5 +1,4 @@
-﻿using DeaneBarker.Optimizely.ResponseProviders.Services;
-using Microsoft.AspNetCore.StaticFiles;
+﻿using Microsoft.AspNetCore.StaticFiles;
 using System.Collections.Generic;
 
 namespace DeaneBarker.Optimizely.ResponseProviders

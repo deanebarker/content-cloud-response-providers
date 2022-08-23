@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace DeaneBarker.Optimizely.ResponseProviders.Services
+namespace DeaneBarker.Optimizely.ResponseProviders
 {
     public interface IResponseProviderLog
     {

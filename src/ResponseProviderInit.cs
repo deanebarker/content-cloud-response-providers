@@ -1,5 +1,9 @@
-﻿using DeaneBarker.Optimizely.ResponseProviders.Services;
+﻿using DeaneBarker.Optimizely.ResponseProviders.Caches;
+using DeaneBarker.Optimizely.ResponseProviders.Commands;
+using DeaneBarker.Optimizely.ResponseProviders.PathTranslators;
+using DeaneBarker.Optimizely.ResponseProviders.SourceProviders;
 using DeaneBarker.Optimizely.ResponseProviders.Transformers;
+using DeaneBarker.Optimizely.ResponseProviders.UserManagers;
 using EPiServer.Core.Routing;
 using EPiServer.Framework;
 using EPiServer.Framework.Initialization;
@@ -21,8 +25,9 @@ namespace DeaneBarker.Optimizely.ResponseProviders
             context.Services.AddSingleton<IResponseProviderCommandManager, ResponseProviderCommandManager>();
             context.Services.AddSingleton<IMimeTypeManager, MimeTypeManager>();
             context.Services.AddSingleton<IResponseProviderLog, ResponseProviderLog>();
-            context.Services.AddSingleton<IResponseProviderCache, InMemoryResponseProviderCache>();
+            context.Services.AddSingleton<IResponseProviderCache, InMemoryCache>();
             context.Services.AddSingleton<IResponseProviderTransformerManager, ResponseProviderTransformerManager>();
+            context.Services.AddSingleton<IResponseProviderUserManager, SimpleUserManager>();
         }
 
         public void Initialize(InitializationEngine context)

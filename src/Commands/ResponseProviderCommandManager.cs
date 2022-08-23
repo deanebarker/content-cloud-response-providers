@@ -1,11 +1,10 @@
 ﻿using DeaneBarker.Optimizely.ResponseProviders.Models;
-using DeaneBarker.Optimizely.ResponseProviders.Services;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace DeaneBarker.Optimizely.ResponseProviders
+namespace DeaneBarker.Optimizely.ResponseProviders.Commands
 {
     public class ResponseProviderCommandManager : IResponseProviderCommandManager
     {

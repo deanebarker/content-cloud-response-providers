@@ -1,10 +1,8 @@
 ﻿using DeaneBarker.Optimizely.ResponseProviders.Models;
-using DeaneBarker.Optimizely.ResponseProviders.Services;
-using EPiServer.Core;
 using EPiServer.ServiceLocation;
 using EPiServer.Web.Routing;
 
-namespace DeaneBarker.Optimizely.ResponseProviders
+namespace DeaneBarker.Optimizely.ResponseProviders.PathTranslators
 {
     public class SimplePathTranslator : IResponseProviderPathTranslator
     {

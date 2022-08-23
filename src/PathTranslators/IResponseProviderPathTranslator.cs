@@ -1,6 +1,6 @@
 ﻿using DeaneBarker.Optimizely.ResponseProviders.Models;
 
-namespace DeaneBarker.Optimizely.ResponseProviders.Services
+namespace DeaneBarker.Optimizely.ResponseProviders.PathTranslators
 {
     public interface IResponseProviderPathTranslator
     {

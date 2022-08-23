@@ -1,4 +1,5 @@
-﻿using DeaneBarker.Optimizely.ResponseProviders.Services;
+﻿using DeaneBarker.Optimizely.ResponseProviders.PathTranslators;
+using DeaneBarker.Optimizely.ResponseProviders.SourceProviders;
 using EPiServer.DataAnnotations;
 using EPiServer.ServiceLocation;
 using System.Collections.Generic;

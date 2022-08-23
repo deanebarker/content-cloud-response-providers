@@ -1,7 +1,6 @@
 ﻿using DeaneBarker.Optimizely.ResponseProviders.Models;
-using DeaneBarker.Optimizely.ResponseProviders.Services;
 
-namespace DeaneBarker.Optimizely.ResponseProviders
+namespace DeaneBarker.Optimizely.ResponseProviders.PathTranslators
 {
     public class FileSystemPathTranslator : SimplePathTranslator, IResponseProviderPathTranslator
     {

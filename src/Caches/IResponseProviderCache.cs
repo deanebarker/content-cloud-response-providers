@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace DeaneBarker.Optimizely.ResponseProviders.Services
+namespace DeaneBarker.Optimizely.ResponseProviders.Caches
 {
     public interface IResponseProviderCache
     {

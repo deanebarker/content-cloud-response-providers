@@ -1,4 +1,5 @@
-﻿using DeaneBarker.Optimizely.ResponseProviders.Services;
+﻿using DeaneBarker.Optimizely.ResponseProviders.PathTranslators;
+using DeaneBarker.Optimizely.ResponseProviders.SourceProviders;
 using EPiServer.DataAnnotations;
 using EPiServer.ServiceLocation;
 using System;
@@ -46,7 +47,7 @@ namespace DeaneBarker.Optimizely.ResponseProviders.Models
             {
                 sourcePayload.Content = wc.DownloadData(string.Concat(proxySiteRoot.ProxyPath, path));
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 // Just swallow it; the Content property will remain null which will trigger a 404
             }
