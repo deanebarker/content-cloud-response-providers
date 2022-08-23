@@ -54,7 +54,7 @@ Request the `Zip Archive Site Root` in your browser. You should see the contents
 
 ## Service Descriptions
 
-[Service Descriptions](docs/services/md)
+[Service Descriptions](docs/services.md)
 
 ## Commands
 
