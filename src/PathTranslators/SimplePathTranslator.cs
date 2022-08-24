@@ -17,7 +17,7 @@ namespace DeaneBarker.Optimizely.ResponseProviders.PathTranslators
             _urlResolver = ServiceLocator.Current.GetInstance<UrlResolver>();
         }
 
-        public string GetTranslatedPath(BaseResponseProvider siteRoot, string requestedPath)
+        public virtual string GetTranslatedPath(BaseResponseProvider siteRoot, string requestedPath)
         {
             var pathToRoot = _urlResolver.GetUrl(siteRoot).TrimStart('/');
             requestedPath = requestedPath.TrimStart('/');
