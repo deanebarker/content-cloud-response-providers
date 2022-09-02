@@ -4,6 +4,7 @@ using EPiServer.DataAnnotations;
 using EPiServer.ServiceLocation;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net;
 
 namespace DeaneBarker.Optimizely.ResponseProviders.SourceProviders
@@ -19,6 +20,8 @@ namespace DeaneBarker.Optimizely.ResponseProviders.SourceProviders
 
         public virtual SourcePayload GetSourcePayload(BaseResponseProvider siteRoot, string url)
         {
+            url = Path.Combine(((ProxyResponseProvider)siteRoot).ProxyPath, url.TrimStart('/'));
+
             var sourcePayload = new SourcePayload()
             {
                 ContentType = mimeTypeManager.GetMimeType(url)
