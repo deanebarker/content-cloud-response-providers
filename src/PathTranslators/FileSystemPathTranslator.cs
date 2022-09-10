@@ -4,8 +4,12 @@ namespace DeaneBarker.Optimizely.ResponseProviders.PathTranslators
 {
     public class FileSystemPathTranslator : SimplePathTranslator, IResponseProviderPathTranslator
     {
-        // Public so you can change it if you like
-        public new string DefaultDocument { get; set; } = "index.html";
+        public new string DefaultDocument { get; set; }
+
+        public FileSystemPathTranslator(string defaultDocument = "index.html")
+        {
+            DefaultDocument = defaultDocument;
+        }
 
         public new string GetTranslatedPath(BaseResponseProvider siteRoot, string requestedPath)
         {

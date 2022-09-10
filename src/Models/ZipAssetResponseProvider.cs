@@ -14,6 +14,9 @@ namespace DeaneBarker.Optimizely.ResponseProviders.Models
         [UIHint(UIHint.MediaFile)]
         public virtual ContentReference ArchiveFile { get; set; }
 
+        [Display(Name = "Default Document Name", Description = "The filename for the default document when a directory is requested. If not provided, it is assumed to be \"index.html\".")]
+        public virtual string DefaultDocument { get; set; }
+
         public override ISourceProvider GetResponseProvider()
         {
             return new ZipArchiveSourceProvider();
@@ -21,7 +24,14 @@ namespace DeaneBarker.Optimizely.ResponseProviders.Models
 
         public override IResponseProviderPathTranslator GetPathTranslator()
         {
-            return new FileSystemPathTranslator();
+            if (!string.IsNullOrWhiteSpace(DefaultDocument))
+            {
+                return new FileSystemPathTranslator(DefaultDocument);
+            }
+            else
+            {
+                return new FileSystemPathTranslator();
+            }
         }
     }
 }
