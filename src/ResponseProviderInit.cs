@@ -1,5 +1,6 @@
 ﻿using DeaneBarker.Optimizely.ResponseProviders.Caches;
 using DeaneBarker.Optimizely.ResponseProviders.Commands;
+using DeaneBarker.Optimizely.ResponseProviders.Logging;
 using DeaneBarker.Optimizely.ResponseProviders.PathTranslators;
 using DeaneBarker.Optimizely.ResponseProviders.SourceProviders;
 using DeaneBarker.Optimizely.ResponseProviders.Transformers;
@@ -24,7 +25,7 @@ namespace DeaneBarker.Optimizely.ResponseProviders
             context.Services.AddSingleton<ISourceProvider, ZipArchiveSourceProvider>();
             context.Services.AddSingleton<IResponseProviderCommandManager, ResponseProviderCommandManager>();
             context.Services.AddSingleton<IMimeTypeManager, MimeTypeManager>();
-            context.Services.AddSingleton<IResponseProviderLog, ResponseProviderLog>();
+            context.Services.AddSingleton<IResponseProviderLog, InMemoryLog>();
             context.Services.AddSingleton<IResponseProviderCache, InMemoryCache>();
             context.Services.AddSingleton<IResponseProviderTransformerManager, ResponseProviderTransformerManager>();
             context.Services.AddSingleton<IResponseProviderUserManager, SimpleUserManager>();

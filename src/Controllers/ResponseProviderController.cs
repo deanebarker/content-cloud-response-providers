@@ -1,5 +1,6 @@
 ﻿using DeaneBarker.Optimizely.ResponseProviders.Caches;
 using DeaneBarker.Optimizely.ResponseProviders.Commands;
+using DeaneBarker.Optimizely.ResponseProviders.Logging;
 using DeaneBarker.Optimizely.ResponseProviders.Models;
 using DeaneBarker.Optimizely.ResponseProviders.Transformers;
 using DeaneBarker.Optimizely.ResponseProviders.UserManagers;
@@ -7,6 +8,7 @@ using EPiServer.Web;
 using EPiServer.Web.Mvc;
 using EPiServer.Web.Routing;
 using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Text;
 
 namespace DeaneBarker.Optimizely.ResponseProviders.Controllers
@@ -20,8 +22,9 @@ namespace DeaneBarker.Optimizely.ResponseProviders.Controllers
         private IContextModeResolver _contextModeResolver;
         private UrlResolver _urlResolver;
         private IResponseProviderUserManager _responseProviderUserManager;
+        private IResponseProviderLog _log;
 
-        public ResponseProviderController(IResponseProviderUserManager responseProviderUserManager, UrlResolver urlResolver, IContextModeResolver contextModeResolver, IResponseProviderCache responseProviderCache, IResponseProviderCommandManager responseProviderCommandManager, IResponseProviderTransformerManager responseProviderTransformerManager, IMimeTypeManager mimeTypeManager)
+        public ResponseProviderController(IResponseProviderLog log, IResponseProviderUserManager responseProviderUserManager, UrlResolver urlResolver, IContextModeResolver contextModeResolver, IResponseProviderCache responseProviderCache, IResponseProviderCommandManager responseProviderCommandManager, IResponseProviderTransformerManager responseProviderTransformerManager, IMimeTypeManager mimeTypeManager)
         {
             _responseProviderCache = responseProviderCache;
             _responseProviderCommandManager = responseProviderCommandManager;
@@ -30,10 +33,14 @@ namespace DeaneBarker.Optimizely.ResponseProviders.Controllers
             _contextModeResolver = contextModeResolver;
             _urlResolver = urlResolver;
             _responseProviderUserManager = responseProviderUserManager;
+            _log = log;
         }
 
         public ActionResult Index(BaseResponseProvider currentPage)
         {
+            Request.HttpContext.Items.Add("__rpk", Guid.NewGuid().ToString());
+            _log.Log("Request received for " + Request.Path.ToString());
+
             // This is a complete hack
             // What should we do in Edit Mode?
             if (_contextModeResolver.CurrentMode == ContextMode.Edit)
@@ -51,8 +58,14 @@ namespace DeaneBarker.Optimizely.ResponseProviders.Controllers
             if (useCache)
             {
                 response = _responseProviderCache.Get(siteId, path);
-                if (response != null) return response;
+                if (response != null)
+                {
+                    _log.Log("Found in cache");
+                    return response;
+                }
             }
+
+            _log.Log("No cache hit");
 
             // Is it a command?
             var commandResult = _responseProviderCommandManager.ProcessCommands(currentPage, path);
@@ -66,6 +79,8 @@ namespace DeaneBarker.Optimizely.ResponseProviders.Controllers
             // Translate the path
             var effectivePath = currentPage.GetPathTranslator().GetTranslatedPath(currentPage, path);
 
+            _log.Log("Path translated");
+
             // Try to retrieve the actual bytes of what was requested
             var sourcePayload = currentPage.GetResponseProvider().GetSourcePayload(currentPage, effectivePath);
             if (sourcePayload.IsEmpty)
@@ -73,7 +88,11 @@ namespace DeaneBarker.Optimizely.ResponseProviders.Controllers
                 return new NotFoundResult(); // Hard 404; not found, and no 404 page
             }
 
+            _log.Log("Source acquired");
+
             sourcePayload.Content = _responseProviderTransformerManager.Transform(sourcePayload.Content, effectivePath, currentPage, sourcePayload.ContentType);
+
+            _log.Log("Source transformed");
 
             // Form the response
             if (_mimeTypeManager.IsText(sourcePayload.ContentType))
@@ -90,6 +109,7 @@ namespace DeaneBarker.Optimizely.ResponseProviders.Controllers
             // Put the response in cache
             if (useCache)
             {
+                _log.Log("Response cached");
                 _responseProviderCache.Put(siteId, path, response);
             }
 

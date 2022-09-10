@@ -16,8 +16,9 @@ namespace DeaneBarker.Optimizely.ResponseProviders.Commands
             commandMap.Add("context", ResponseProviderCommands.ShowContext);
             commandMap.Add("contents", ResponseProviderCommands.ShowContents);
             commandMap.Add("cache", ResponseProviderCommands.ShowCache);
-            commandMap.Add("clear", ResponseProviderCommands.ClearCache);
+            commandMap.Add("clear-cache", ResponseProviderCommands.ClearCache);
             commandMap.Add("log", ResponseProviderCommands.ShowLog);
+            commandMap.Add("clear-log", ResponseProviderCommands.ClearLog);
         }
 
         public ActionResult ProcessCommands(BaseResponseProvider siteRoot, string path)

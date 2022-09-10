@@ -1,4 +1,5 @@
 ﻿using DeaneBarker.Optimizely.ResponseProviders.Caches;
+using DeaneBarker.Optimizely.ResponseProviders.Logging;
 using DeaneBarker.Optimizely.ResponseProviders.Models;
 using DeaneBarker.Optimizely.ResponseProviders.SourceProviders;
 using EPiServer;
@@ -117,9 +118,27 @@ namespace DeaneBarker.Optimizely.ResponseProviders.Commands
         public static ActionResult ShowLog(BaseResponseProvider currentPage, string _)
         {
             var _log = ServiceLocator.Current.GetInstance<IResponseProviderLog>();
+            var _httpContext = ServiceLocator.Current.GetInstance<IHttpContextAccessor>();
+
+            var key = _httpContext.HttpContext.Request.Query["key"].FirstOrDefault();
+
+            var entries = key == null ? _log.Entries : _log.GetEntriesForKey(key);
+
             return new ContentResult()
             {
-                Content = string.Join(Environment.NewLine, _log.Entries),
+                Content = string.Join(Environment.NewLine, entries),
+                ContentType = "text/plain"
+            };
+        }
+
+        public static ActionResult ClearLog(BaseResponseProvider currentPage, string _)
+        {
+            var _log = ServiceLocator.Current.GetInstance<IResponseProviderLog>();
+            _log.Clear();
+
+            return new ContentResult()
+            {
+                Content = "Log cleared",
                 ContentType = "text/plain"
             };
         }
