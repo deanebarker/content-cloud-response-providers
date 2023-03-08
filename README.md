@@ -52,10 +52,6 @@ Zip all the files (_not_ the directory they're in; highlight all the files, and 
 
 Request the `Zip Archive Site Root` in your browser. You should see the contents of `index.html`. Any embedded links -- `A@HREF`, `LINK@HREF, `SCRIPT@SRC`, `IMG@SRC`, etc. -- should also work.
 
-## Service Descriptions
-
-[Service Descriptions](docs/services.md)
-
 ## Commands
 
 There are several "magic" URL paths that will perform actions or provide information when called on a `BaseResponseProvider` (note: the below are *double* underscores):
